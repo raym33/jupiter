@@ -4,6 +4,8 @@
 
 Train your own 1B parameter model using a cluster of Macs (M4/M5) and/or NVIDIA GPUs, with automatic synthetic data generation and self-improvement cycle.
 
+**NEW: MoE-R (Mixture of Real Experts)** - Multiple specialized models collaborating in real-time!
+
 ---
 
 ## Features
@@ -13,6 +15,69 @@ Train your own 1B parameter model using a cluster of Macs (M4/M5) and/or NVIDIA 
 - **Synthetic data generation**: Uses local models (Llama, Mistral) to generate training data
 - **Self-improvement cycle**: The trained model can replace the generator when it surpasses it
 - **Heterogeneous hardware**: Combine Macs with different RAM amounts and NVIDIA GPUs
+- **MoE-R Swarm**: Multiple expert models collaborating to solve complex multi-domain tasks
+
+---
+
+## MoE-R: Mixture of Real Experts
+
+Jupiter includes an experimental **MoE-R** system where multiple specialized small models (500M-1B each) work together:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                    JUPITER MoE-R (Mixture of Real Experts)              │
+│                                                                         │
+│   Query: "Create a React + FastAPI app with pandas data processing"     │
+│                              │                                          │
+│                              ▼                                          │
+│                    ┌─────────────────┐                                  │
+│                    │     ROUTER      │  ← Selects relevant experts      │
+│                    └────────┬────────┘                                  │
+│                             │                                           │
+│         ┌───────────────────┼───────────────────┐                       │
+│         ▼                   ▼                   ▼                       │
+│   ┌───────────┐       ┌───────────┐       ┌───────────┐                │
+│   │  React    │       │  FastAPI  │       │  Pandas   │                │
+│   │  Expert   │       │  Expert   │       │  Expert   │                │
+│   │  (Mac 1)  │       │  (Mac 2)  │       │  (Mac 3)  │                │
+│   └─────┬─────┘       └─────┬─────┘       └─────┬─────┘                │
+│         │                   │                   │                       │
+│         └───────────────────┼───────────────────┘                       │
+│                             ▼                                           │
+│                    ┌─────────────────┐                                  │
+│                    │   SYNTHESIZER   │  ← Combines expert responses     │
+│                    └────────┬────────┘                                  │
+│                             │                                           │
+│                             ▼                                           │
+│                    Unified Response                                     │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+### Quick Start with MoE-R
+
+```bash
+# List available experts
+jupiter swarm list
+
+# Chat with the expert swarm
+jupiter swarm chat --experts config/experts/python
+
+# Single query
+jupiter swarm query "How do I create a FastAPI endpoint with Pydantic validation?"
+
+# Create a new expert
+jupiter swarm create-expert my-expert --domain python
+```
+
+### Included Expert Configurations
+
+| Expert | Domain | Specialization |
+|--------|--------|----------------|
+| `python-core` | Python | Language fundamentals, stdlib, typing |
+| `python-datascience` | Data Science | pandas, numpy, matplotlib |
+| `python-backend` | Web Backend | FastAPI, Django, Flask, databases |
+| `react-frontend` | Frontend | React, TypeScript, hooks, state |
+| `api-architect` | API Design | REST, GraphQL, system design |
 
 ---
 
@@ -74,18 +139,19 @@ pip install -e ".[nvidia]"
 
 ## Quick Start
 
-### Step 1: Configure your domain
+### Option A: Train a Single Expert Model
 
-Copy the template and edit it:
+#### Step 1: Configure your domain
+
 ```bash
-cp config/domains/_template.yaml config/domains/my_domain.yaml
+jupiter new-domain python_expert
 ```
 
-Edit `my_domain.yaml` with your domain's data sources and configuration.
+Edit `config/domains/python_expert.yaml` with your data sources.
 
-### Step 2: Configure the cluster
+#### Step 2: Configure the cluster
 
-Edit `config/cluster.yaml` with your devices:
+Edit `config/cluster.yaml`:
 ```yaml
 nodes:
   - host: "macbook.local"
@@ -95,23 +161,36 @@ nodes:
   - host: "mac-mini-1.local"
     role: "trainer"
     memory_gb: 16
-
-  # Add more nodes...
 ```
 
-### Step 3: Start training
+#### Step 3: Start training
 
 ```bash
 # Interactive mode (recommended to start)
-jupiter start --domain my_domain --interactive
+jupiter start --domain python_expert --interactive
 
 # Automatic mode (full cycle)
-jupiter start --domain my_domain --auto
+jupiter start --domain python_expert --auto
+```
+
+### Option B: Run MoE-R Expert Swarm
+
+```bash
+# Check system status
+jupiter swarm status
+
+# Start interactive chat with Python experts
+jupiter swarm chat --experts config/experts/python
+
+# Query with specific experts
+jupiter swarm query "Explain decorators in Python" -l python-core
 ```
 
 ---
 
 ## Architecture
+
+### Training Pipeline
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -135,31 +214,18 @@ jupiter start --domain my_domain --auto
 │   │   │ Mac #1  │  │ Mac #2  │  │ Mac #3  │  │ RTX GPU │    │ │
 │   │   │  MLX    │  │  MLX    │  │  MLX    │  │ PyTorch │    │ │
 │   │   └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘    │ │
-│   │        │            │            │            │          │ │
 │   │        └────────────┴─────┬──────┴────────────┘          │ │
 │   │                           │                              │ │
 │   │                    ┌──────▼──────┐                       │ │
 │   │                    │  GRADIENT   │                       │ │
 │   │                    │    SYNC     │                       │ │
-│   │                    └──────┬──────┘                       │ │
-│   │                           │                              │ │
-│   └───────────────────────────┼──────────────────────────────┘ │
-│                               │                                │
-│                        ┌──────▼──────┐                         │
-│                        │ CHECKPOINT  │                         │
-│                        │   + EVAL    │                         │
-│                        └──────┬──────┘                         │
-│                               │                                │
-│                        ┌──────▼──────┐                         │
-│                        │  SURPASSES  │                         │
-│                        │ GENERATOR?  │                         │
-│                        └──────┬──────┘                         │
-│                               │ Yes                            │
-│                        ┌──────▼──────┐                         │
-│                        │  REPLACE    │                         │
-│                        │  GENERATOR  │ ──► CYCLE CONTINUES     │
-│                        └─────────────┘                         │
+│   │                    └─────────────┘                       │ │
+│   └──────────────────────────────────────────────────────────┘ │
 │                                                                │
+│                        ┌──────────────┐                        │
+│                        │ SELF-IMPROVE │                        │
+│                        │    CYCLE     │ ──► Model replaces     │
+│                        └──────────────┘     generator          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -171,9 +237,13 @@ jupiter start --domain my_domain --auto
 jupiter/
 ├── config/
 │   ├── cluster.yaml           # Your cluster configuration
-│   └── domains/
-│       ├── _template.yaml     # Template for new domains
-│       └── unreal_engine.yaml # Example: UE5 expert
+│   ├── domains/
+│   │   ├── _template.yaml     # Template for new domains
+│   │   └── unreal_engine.yaml # Example: UE5 expert
+│   └── experts/               # MoE-R expert configurations
+│       ├── python/            # Python experts
+│       ├── fullstack/         # Fullstack experts
+│       └── gamedev/           # Game dev experts
 │
 ├── jupiter/
 │   ├── config/                # Configuration system
@@ -183,14 +253,60 @@ jupiter/
 │   │   ├── filters/           # Quality filters
 │   │   └── queue/             # Data queue for training
 │   ├── training/
-│   │   ├── model/             # Model architecture
-│   │   ├── distributed/       # Distributed training (MLX + PyTorch)
+│   │   ├── model/             # Model architecture (MLX)
+│   │   ├── distributed/       # Distributed training
 │   │   └── evaluation/        # Benchmarks and evaluation
-│   └── orchestrator/          # Full cycle orchestration
+│   ├── swarm/                 # MoE-R system
+│   │   ├── expert.py          # Expert agent
+│   │   ├── router.py          # Query router
+│   │   ├── synthesizer.py     # Response combiner
+│   │   └── swarm.py           # Main orchestrator
+│   └── orchestrator/          # Training orchestration
 │
-├── scripts/                   # Utility scripts
-├── tests/                     # Tests
-└── docs/                      # Extended documentation
+├── docs/                      # Documentation
+└── tests/                     # Tests
+```
+
+---
+
+## CLI Commands
+
+### Training Commands
+
+```bash
+# Start training pipeline
+jupiter start --domain <name> [--auto|--interactive]
+
+# Check configuration
+jupiter check
+
+# Create new domain
+jupiter new-domain <name>
+
+# Show model info
+jupiter model-info --preset 1b
+```
+
+### Swarm Commands (MoE-R)
+
+```bash
+# List available experts
+jupiter swarm list
+
+# Check swarm status
+jupiter swarm status
+
+# Interactive chat
+jupiter swarm chat [--experts <dir>] [-l <expert-name>]
+
+# Single query
+jupiter swarm query "<question>" [-l <expert-name>] [-k <top-k>]
+
+# Create new expert config
+jupiter swarm create-expert <name> --domain <domain>
+
+# Train an expert (coming soon)
+jupiter swarm train -e <name> -d <domain-config>
 ```
 
 ---
@@ -211,7 +327,21 @@ jupiter/
 - [Adding NVIDIA GPUs](docs/nvidia_setup.md)
 - [Creating a New Domain](docs/new_domain.md)
 - [Understanding Self-Improvement](docs/self_improvement.md)
-- [Documentación en Español](docs/español/)
+- [Spanish Documentation](docs/español/)
+
+---
+
+## Roadmap
+
+- [x] Core training pipeline
+- [x] MLX distributed training
+- [x] Synthetic data generation
+- [x] Self-improvement cycle
+- [x] MoE-R swarm system
+- [ ] PyTorch model implementation
+- [ ] GGUF export for llama.cpp
+- [ ] Web UI for monitoring
+- [ ] Expert debate/refinement rounds
 
 ---
 
