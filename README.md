@@ -323,6 +323,8 @@ jupiter swarm train -e <name> -d <domain-config>
 
 ## Documentation
 
+- [Examples & Use Cases](docs/examples.md) - Complete examples of what Jupiter can do
+- [MoE-R Swarm Guide](docs/swarm_moer.md) - Detailed guide on expert collaboration
 - [Mac Cluster Setup](docs/mac_cluster_setup.md)
 - [Adding NVIDIA GPUs](docs/nvidia_setup.md)
 - [Creating a New Domain](docs/new_domain.md)
