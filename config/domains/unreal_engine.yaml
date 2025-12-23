@@ -1,0 +1,400 @@
+# =============================================================================
+# DOMINIO: UNREAL ENGINE 5
+# =============================================================================
+#
+# Configuración para entrenar un experto en desarrollo de videojuegos
+# con Unreal Engine 5 (C++, Blueprints, sistemas de juego).
+#
+# =============================================================================
+
+domain:
+  name: "unreal_engine"
+  description: "Experto en desarrollo de videojuegos con Unreal Engine 5"
+  language: "es"
+
+  keywords:
+    - "unreal"
+    - "ue5"
+    - "blueprint"
+    - "c++"
+    - "gameplay"
+    - "actor"
+    - "component"
+    - "widget"
+    - "niagara"
+    - "material"
+    - "shader"
+    - "animation"
+    - "skeletal mesh"
+    - "static mesh"
+    - "level"
+    - "world"
+    - "gamemode"
+    - "playercontroller"
+    - "character"
+    - "pawn"
+    - "anim blueprint"
+    - "behavior tree"
+    - "blackboard"
+    - "EQS"
+    - "GAS"
+    - "replication"
+    - "RPC"
+    - "multiplayer"
+
+  negative_keywords:
+    - "unity"  # Motor diferente
+    - "godot"
+    - "crack"
+    - "pirate"
+    - "free download"
+
+# =============================================================================
+# FUENTES DE DATOS
+# =============================================================================
+data_sources:
+  documentation:
+    - "https://dev.epicgames.com/documentation/en-us/unreal-engine"
+    - "https://docs.unrealengine.com"
+
+  github:
+    repos:
+      - "EpicGames/UnrealEngine"
+      - "EpicGames/Lyra"
+      - "tranek/GASDocumentation"
+    file_types:
+      - ".cpp"
+      - ".h"
+      - ".hpp"
+      - ".uasset"
+      - ".umap"
+      - ".md"
+      - ".txt"
+    exclude_patterns:
+      - "ThirdParty/*"
+      - "Binaries/*"
+      - "Intermediate/*"
+      - "Saved/*"
+
+  websites:
+    - "https://www.unrealengine.com/en-US/blog"
+    - "https://benui.ca"
+    - "https://unrealcommunity.wiki"
+
+  forums:
+    - "https://forums.unrealengine.com"
+    - "https://www.reddit.com/r/unrealengine"
+
+  youtube:
+    channels:
+      - "UnrealEngine"
+      - "UnrealSensei"
+      - "RyanLaley"
+      - "MathewWadstein"
+      - "AlexForsythe"
+
+  huggingface_datasets: []
+
+# =============================================================================
+# GENERACIÓN DE DATOS SINTÉTICOS
+# =============================================================================
+generation:
+  templates:
+    # -------------------------------------------------------------------------
+    # Preguntas y respuestas técnicas
+    # -------------------------------------------------------------------------
+    - type: "qa"
+      system_prompt: |
+        Eres un desarrollador senior de videojuegos con 10+ años de experiencia
+        en Unreal Engine. Explicas conceptos de forma clara y práctica,
+        siempre incluyendo código C++ o Blueprints cuando es relevante.
+        Respondes en español.
+      prompt: |
+        Genera una pregunta técnica avanzada sobre {topic} en Unreal Engine 5.
+
+        La respuesta debe incluir:
+        1. Explicación clara del concepto
+        2. Código C++ de ejemplo (si aplica)
+        3. Cómo hacerlo en Blueprints (si aplica)
+        4. Mejores prácticas y errores comunes
+        5. Consideraciones de rendimiento
+
+        Formato:
+        **Pregunta:** [pregunta técnica]
+
+        **Respuesta:**
+        [respuesta detallada con código]
+      topics:
+        # Fundamentos
+        - "Actor lifecycle (BeginPlay, Tick, EndPlay)"
+        - "Components y su jerarquía"
+        - "UObject y garbage collection"
+        - "UPROPERTY y UFUNCTION macros"
+        - "Delegates y eventos"
+
+        # Gameplay
+        - "Character movement component"
+        - "Player Controller vs AI Controller"
+        - "GameMode y GameState"
+        - "Pawn y Character"
+        - "Input system (Enhanced Input)"
+
+        # Blueprints
+        - "Blueprint communication"
+        - "Blueprint interfaces"
+        - "Event dispatchers"
+        - "Blueprint function libraries"
+        - "Data-only blueprints"
+
+        # Sistemas avanzados
+        - "Gameplay Ability System (GAS)"
+        - "Behavior Trees para AI"
+        - "Environment Query System (EQS)"
+        - "Blackboard y AI Perception"
+
+        # Gráficos
+        - "Material Editor y shaders"
+        - "Niagara particle system"
+        - "Lumen y Nanite"
+        - "Post-process effects"
+        - "Level streaming"
+
+        # Networking
+        - "Replicación de actores"
+        - "RPCs (Server, Client, Multicast)"
+        - "Network relevancy"
+        - "Client-side prediction"
+
+        # Animación
+        - "Animation Blueprints"
+        - "State machines"
+        - "Blend spaces"
+        - "Animation montages"
+        - "IK y procedural animation"
+
+        # UI
+        - "UMG Widget system"
+        - "Slate vs UMG"
+        - "HUD y menús"
+        - "Data binding en UI"
+
+        # Optimización
+        - "Profiling con Unreal Insights"
+        - "LODs y culling"
+        - "Async loading"
+        - "Memory management"
+
+    # -------------------------------------------------------------------------
+    # Tutoriales paso a paso
+    # -------------------------------------------------------------------------
+    - type: "tutorial"
+      system_prompt: |
+        Eres un instructor de Unreal Engine que crea tutoriales claros
+        y fáciles de seguir. Siempre incluyes código completo y explicaciones
+        de cada paso. Respondes en español.
+      prompt: |
+        Crea un tutorial completo paso a paso para {task} en Unreal Engine 5.
+
+        El tutorial debe incluir:
+        1. Objetivo del tutorial
+        2. Requisitos previos
+        3. Pasos numerados con explicaciones
+        4. Código C++ completo con comentarios
+        5. Configuración en el Editor (si aplica)
+        6. Blueprint alternativo (si aplica)
+        7. Testing y verificación
+        8. Posibles problemas y soluciones
+
+        Formato:
+        # Tutorial: {task}
+
+        ## Objetivo
+        [descripción del resultado final]
+
+        ## Requisitos previos
+        - [requisito 1]
+        - [requisito 2]
+
+        ## Paso 1: [título]
+        [explicación detallada con código]
+
+        ...
+      tasks:
+        # Sistemas de juego
+        - "Crear un sistema de inventario con drag & drop"
+        - "Implementar un sistema de diálogos con branching"
+        - "Crear un sistema de quests/misiones"
+        - "Implementar un sistema de crafting"
+        - "Crear un sistema de save/load game"
+
+        # Character
+        - "Crear un character controller en tercera persona"
+        - "Implementar un sistema de combate cuerpo a cuerpo"
+        - "Crear un sistema de habilidades con cooldowns"
+        - "Implementar wall running y parkour"
+        - "Crear un sistema de stamina y stats"
+
+        # AI
+        - "Crear un enemigo con patrullaje y detección"
+        - "Implementar un companion/follower NPC"
+        - "Crear un sistema de facciones para AI"
+        - "Implementar AI que usa cover"
+
+        # Multiplayer
+        - "Configurar un proyecto multiplayer básico"
+        - "Implementar lobby y matchmaking"
+        - "Crear un sistema de chat"
+        - "Sincronizar inventario en multiplayer"
+
+        # UI/UX
+        - "Crear un menú principal con opciones"
+        - "Implementar un HUD con health bar y minimapa"
+        - "Crear un sistema de notificaciones en pantalla"
+        - "Implementar subtítulos dinámicos"
+
+        # Procedural
+        - "Generar dungeons procedurales"
+        - "Crear terreno procedural con biomas"
+        - "Implementar spawn system para loot"
+
+    # -------------------------------------------------------------------------
+    # Debugging y solución de problemas
+    # -------------------------------------------------------------------------
+    - type: "debug"
+      system_prompt: |
+        Eres un experto en debugging de Unreal Engine. Ayudas a resolver
+        problemas comunes y errores de compilación/runtime.
+        Respondes en español.
+      prompt: |
+        Genera un problema/error común relacionado con {topic} en Unreal Engine 5.
+
+        Incluye:
+        1. Descripción del problema
+        2. Mensaje de error exacto (si aplica)
+        3. Código que causa el error
+        4. Causa raíz del problema
+        5. Solución paso a paso
+        6. Cómo prevenir este error en el futuro
+
+        Formato:
+        ## Problema: [título descriptivo]
+
+        ### Síntomas
+        [qué ve el usuario]
+
+        ### Error
+        ```
+        [mensaje de error]
+        ```
+
+        ### Código problemático
+        ```cpp
+        [código]
+        ```
+
+        ### Causa
+        [explicación]
+
+        ### Solución
+        [pasos para resolver]
+
+        ### Prevención
+        [cómo evitarlo]
+      topics:
+        - "Access violation en punteros"
+        - "Nullptr exceptions"
+        - "Blueprint compilation errors"
+        - "Circular dependencies"
+        - "Missing includes"
+        - "Linker errors"
+        - "Replication issues"
+        - "Animation not playing"
+        - "Physics glitches"
+        - "UI not responding to input"
+        - "Package build failures"
+        - "Hot reload crashes"
+        - "Garbage collection issues"
+        - "Async loading problems"
+        - "Material shader errors"
+
+    # -------------------------------------------------------------------------
+    # Explicaciones conceptuales
+    # -------------------------------------------------------------------------
+    - type: "explanation"
+      system_prompt: |
+        Eres un arquitecto de software especializado en Unreal Engine.
+        Explicas conceptos de arquitectura y diseño de forma profunda pero accesible.
+        Respondes en español.
+      prompt: |
+        Explica en profundidad el concepto de {topic} en Unreal Engine 5.
+
+        La explicación debe incluir:
+        1. Qué es y para qué sirve
+        2. Cómo funciona internamente
+        3. Cuándo usarlo y cuándo no
+        4. Comparación con alternativas
+        5. Ejemplos de uso real
+        6. Mejores prácticas
+
+        Formato:
+        # {topic}
+
+        ## ¿Qué es?
+        [definición clara]
+
+        ## ¿Cómo funciona?
+        [explicación técnica]
+
+        ## ¿Cuándo usarlo?
+        [casos de uso]
+
+        ## Alternativas
+        [comparación]
+
+        ## Ejemplo práctico
+        [código y explicación]
+
+        ## Mejores prácticas
+        [recomendaciones]
+      topics:
+        - "Subsystems en UE5"
+        - "Gameplay Tags"
+        - "Data Assets vs Data Tables"
+        - "Soft vs Hard references"
+        - "Primary Asset IDs"
+        - "World Partition"
+        - "Enhanced Input System"
+        - "Common UI plugin"
+        - "Modular gameplay features"
+
+  template_weights:
+    qa: 0.35
+    tutorial: 0.30
+    debug: 0.20
+    explanation: 0.15
+
+# =============================================================================
+# EVALUACIÓN
+# =============================================================================
+evaluation:
+  benchmarks:
+    - "code_syntax"          # ¿El código C++ es sintácticamente correcto?
+    - "ue_api_accuracy"      # ¿Usa la API de UE correctamente?
+    - "best_practices"       # ¿Sigue las mejores prácticas?
+    - "explanation_clarity"  # ¿La explicación es clara?
+    - "completeness"         # ¿La respuesta es completa?
+
+  custom_eval_file: null
+
+  min_accuracy: 0.75
+  min_coherence: 0.80
+
+# =============================================================================
+# PROPORCIÓN DE DATOS
+# =============================================================================
+mix_ratio:
+  real_docs: 0.25
+  real_code: 0.25
+  synthetic_qa: 0.20
+  synthetic_tutorials: 0.20
+  synthetic_debug: 0.10

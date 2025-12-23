@@ -1,0 +1,144 @@
+# =============================================================================
+# TEMPLATE DE DOMINIO - JUPITER
+# =============================================================================
+#
+# Copia este archivo y renómbralo para crear un nuevo dominio de especialización.
+# Ejemplo: cp _template.yaml mi_dominio.yaml
+#
+# =============================================================================
+
+# =============================================================================
+# INFORMACIÓN DEL DOMINIO
+# =============================================================================
+domain:
+  name: "nombre_del_dominio"
+  description: "Descripción breve del experto que se va a entrenar"
+  language: "es"  # Idioma principal: "es", "en", etc.
+
+  # Palabras clave del dominio (ayudan al filtrado)
+  keywords:
+    - "keyword1"
+    - "keyword2"
+
+  # Palabras que indican contenido de baja calidad
+  negative_keywords:
+    - "spam"
+    - "clickbait"
+
+# =============================================================================
+# FUENTES DE DATOS
+# =============================================================================
+data_sources:
+  # URLs de documentación oficial
+  documentation:
+    - "https://docs.example.com"
+
+  # Repositorios de GitHub
+  github:
+    repos:
+      - "org/repo-name"
+    file_types:
+      - ".py"
+      - ".md"
+    exclude_patterns:
+      - "test_*"
+      - "*_test.py"
+
+  # Sitios web para scraping
+  websites:
+    - "https://tutorial-site.com"
+
+  # Foros y comunidades
+  forums:
+    - "https://community.example.com"
+
+  # Canales de YouTube (para transcripciones)
+  youtube:
+    channels:
+      - "ChannelName"
+
+  # Datasets de Hugging Face (complementarios)
+  huggingface_datasets: []
+
+# =============================================================================
+# GENERACIÓN DE DATOS SINTÉTICOS
+# =============================================================================
+generation:
+  templates:
+    # Template de preguntas y respuestas
+    - type: "qa"
+      system_prompt: |
+        Eres un experto en [DOMINIO]. Responde de forma clara y técnica.
+      prompt: |
+        Genera una pregunta técnica sobre {topic} y su respuesta detallada.
+        La respuesta debe incluir:
+        - Explicación clara del concepto
+        - Ejemplo práctico si aplica
+        - Errores comunes a evitar
+      topics:
+        - "topic1"
+        - "topic2"
+        - "topic3"
+
+    # Template de tutoriales
+    - type: "tutorial"
+      system_prompt: |
+        Eres un instructor experto en [DOMINIO].
+      prompt: |
+        Crea un tutorial paso a paso para {task}.
+        Incluye:
+        - Requisitos previos
+        - Pasos numerados
+        - Código o ejemplos
+        - Resultado esperado
+      tasks:
+        - "tarea1"
+        - "tarea2"
+
+    # Template de debugging
+    - type: "debug"
+      system_prompt: |
+        Eres un experto en resolver problemas de [DOMINIO].
+      prompt: |
+        Genera un problema común relacionado con {topic}.
+        Incluye:
+        - Descripción del error
+        - Mensaje de error típico
+        - Causa raíz
+        - Solución paso a paso
+      topics:
+        - "topic1"
+        - "topic2"
+
+  # Pesos de cada tipo de template (deben sumar 1.0)
+  template_weights:
+    qa: 0.4
+    tutorial: 0.35
+    debug: 0.25
+
+# =============================================================================
+# EVALUACIÓN
+# =============================================================================
+evaluation:
+  benchmarks:
+    - "accuracy"
+    - "coherence"
+    - "domain_knowledge"
+
+  # Archivo de evaluación personalizado (opcional)
+  custom_eval_file: null
+
+  # Umbrales mínimos
+  min_accuracy: 0.7
+  min_coherence: 0.8
+
+# =============================================================================
+# PROPORCIÓN DE DATOS
+# =============================================================================
+# Deben sumar 1.0
+mix_ratio:
+  real_docs: 0.30        # Documentación real
+  real_code: 0.20        # Código real
+  synthetic_qa: 0.25     # Q&A generadas
+  synthetic_tutorials: 0.15  # Tutoriales generados
+  synthetic_debug: 0.10  # Problemas/soluciones generados

@@ -1,0 +1,108 @@
+# =============================================================================
+# CONFIGURACIÓN DEL CLUSTER - JUPITER
+# =============================================================================
+#
+# Este archivo define tu cluster de dispositivos para training distribuido.
+#
+# EJEMPLO DE CONFIGURACIÓN:
+# - 1 MacBook 24GB como generador de datos
+# - 4 Mac Mini M4 16GB como trainers
+# - 1 PC con RTX 4090 como trainer adicional (opcional)
+#
+# =============================================================================
+
+# Backend de comunicación
+# Opciones: "mpi", "ring", "jaccl" (solo Thunderbolt 5)
+backend: "mpi"
+
+# Usar puente Thunderbolt para comunicación directa
+use_thunderbolt_bridge: true
+
+# Sincronizar gradientes cada N steps (1 = cada step)
+sync_every_n_steps: 1
+
+# Comprimir gradientes para reducir tráfico de red
+gradient_compression: false
+
+# Tolerancia a fallos
+checkpoint_on_failure: true
+auto_restart_failed_nodes: true
+
+# =============================================================================
+# NODOS DEL CLUSTER
+# =============================================================================
+
+nodes:
+  # ---------------------------------------------------------------------------
+  # Nodo generador principal (MacBook)
+  # ---------------------------------------------------------------------------
+  - host: "macbook.local"        # Hostname o IP
+    name: "MacBook Principal"     # Nombre amigable (opcional)
+    device_type: "mac"            # "mac", "nvidia", "cpu"
+    memory_gb: 24                 # RAM disponible
+    chip: "M4"                    # Chip específico
+    role: "generator"             # "generator", "trainer", "hybrid", "evaluator"
+    connection_type: "thunderbolt"  # "thunderbolt", "ethernet", "wifi"
+    ssh_user: null                # Usuario SSH (null = usuario actual)
+    ssh_port: 22
+    can_generate: true
+    can_train: false              # El generador no entrena (dedicado)
+
+  # ---------------------------------------------------------------------------
+  # Nodos de training (Mac Minis)
+  # ---------------------------------------------------------------------------
+  - host: "mac-mini-1.local"
+    name: "Mac Mini 1"
+    device_type: "mac"
+    memory_gb: 16
+    chip: "M4"
+    role: "trainer"
+    connection_type: "thunderbolt"
+    can_generate: false
+    can_train: true
+
+  - host: "mac-mini-2.local"
+    name: "Mac Mini 2"
+    device_type: "mac"
+    memory_gb: 16
+    chip: "M4"
+    role: "trainer"
+    connection_type: "thunderbolt"
+    can_generate: false
+    can_train: true
+
+  - host: "mac-mini-3.local"
+    name: "Mac Mini 3"
+    device_type: "mac"
+    memory_gb: 16
+    chip: "M4"
+    role: "trainer"
+    connection_type: "thunderbolt"
+    can_generate: false
+    can_train: true
+
+  - host: "mac-mini-4.local"
+    name: "Mac Mini 4"
+    device_type: "mac"
+    memory_gb: 16
+    chip: "M4"
+    role: "trainer"
+    connection_type: "thunderbolt"
+    can_generate: false
+    can_train: true
+
+  # ---------------------------------------------------------------------------
+  # Nodo NVIDIA opcional
+  # ---------------------------------------------------------------------------
+  # Descomenta para añadir una GPU NVIDIA al cluster
+  #
+  # - host: "192.168.1.100"
+  #   name: "Workstation RTX 4090"
+  #   device_type: "nvidia"
+  #   memory_gb: 24               # VRAM
+  #   chip: "RTX 4090"
+  #   role: "trainer"
+  #   connection_type: "ethernet"
+  #   ssh_user: "user"
+  #   can_generate: false
+  #   can_train: true
