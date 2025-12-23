@@ -270,7 +270,7 @@ class JupiterModel:
             return self._model.parameters()
 
     def save(self, path: str) -> None:
-        """Guarda el modelo."""
+        """Save the model."""
         if self.backend == "mlx":
             import json
             from pathlib import Path
@@ -278,10 +278,11 @@ class JupiterModel:
             path = Path(path)
             path.mkdir(parents=True, exist_ok=True)
 
-            # Guardar pesos
-            mx.savez(str(path / "weights.npz"), **dict(self._model.parameters()))
+            # Save weights - flatten the nested parameter dict
+            flat_weights = {name: param for name, param in nn.utils.tree_flatten(self._model.parameters())}
+            mx.savez(str(path / "weights.npz"), **flat_weights)
 
-            # Guardar config
+            # Save config
             with open(path / "config.json", "w") as f:
                 json.dump(self.config.to_dict(), f, indent=2)
 
