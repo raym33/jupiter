@@ -1,90 +1,90 @@
-# Contribuir a Jupiter
+# Contributing to Jupiter
 
-¡Gracias por tu interés en contribuir a Jupiter!
+Thank you for your interest in contributing to Jupiter!
 
-## Cómo Contribuir
+## How to Contribute
 
-### Reportar Bugs
+### Reporting Bugs
 
-1. Verifica que el bug no haya sido reportado antes
-2. Crea un issue con:
-   - Descripción clara del problema
-   - Pasos para reproducir
-   - Comportamiento esperado vs actual
-   - Información del sistema (macOS/Linux, chip, RAM)
+1. Check that the bug hasn't been reported before
+2. Create an issue with:
+   - Clear description of the problem
+   - Steps to reproduce
+   - Expected vs actual behavior
+   - System information (macOS/Linux, chip, RAM)
 
-### Proponer Features
+### Proposing Features
 
-1. Abre un issue describiendo la feature
-2. Discute el diseño antes de implementar
-3. Referencia el issue en tu PR
+1. Open an issue describing the feature
+2. Discuss the design before implementing
+3. Reference the issue in your PR
 
 ### Pull Requests
 
-1. Fork el repositorio
-2. Crea una branch: `git checkout -b feature/mi-feature`
-3. Haz tus cambios
-4. Añade tests si aplica
-5. Asegúrate de que pasan los tests: `pytest`
-6. Formatea el código: `black . && ruff check --fix .`
-7. Commit: `git commit -m "feat: descripción"`
-8. Push: `git push origin feature/mi-feature`
-9. Abre un Pull Request
+1. Fork the repository
+2. Create a branch: `git checkout -b feature/my-feature`
+3. Make your changes
+4. Add tests if applicable
+5. Make sure tests pass: `pytest`
+6. Format the code: `black . && ruff check --fix .`
+7. Commit: `git commit -m "feat: description"`
+8. Push: `git push origin feature/my-feature`
+9. Open a Pull Request
 
-### Estilo de Código
+### Code Style
 
-- Usamos [Black](https://black.readthedocs.io/) para formateo
-- Usamos [Ruff](https://docs.astral.sh/ruff/) para linting
-- Líneas de máximo 100 caracteres
-- Docstrings en español o inglés
+- We use [Black](https://black.readthedocs.io/) for formatting
+- We use [Ruff](https://docs.astral.sh/ruff/) for linting
+- Maximum 100 characters per line
+- Docstrings in English
 
 ### Commits
 
-Usamos [Conventional Commits](https://www.conventionalcommits.org/):
+We use [Conventional Commits](https://www.conventionalcommits.org/):
 
-- `feat:` nueva funcionalidad
-- `fix:` corrección de bug
-- `docs:` documentación
-- `refactor:` refactorización
+- `feat:` new functionality
+- `fix:` bug fix
+- `docs:` documentation
+- `refactor:` refactoring
 - `test:` tests
-- `chore:` mantenimiento
+- `chore:` maintenance
 
-## Áreas de Contribución
+## Contribution Areas
 
-### Alta Prioridad
+### High Priority
 
-- [ ] Tests automatizados
-- [ ] Implementación PyTorch del modelo
-- [ ] Más dominios de ejemplo
-- [ ] Optimizaciones de rendimiento
+- [ ] Automated tests
+- [ ] PyTorch model implementation
+- [ ] More example domains
+- [ ] Performance optimizations
 
 ### Ideas
 
-- Soporte para más backends de tokenizer
-- Visualización de métricas en tiempo real
-- Integración con Weights & Biases
-- Exportación a GGUF para llama.cpp
+- Support for more tokenizer backends
+- Real-time metrics visualization
+- Weights & Biases integration
+- GGUF export for llama.cpp
 
-## Desarrollo Local
+## Local Development
 
 ```bash
-# Clonar
+# Clone
 git clone https://github.com/raym33/jupiter.git
 cd jupiter
 
-# Instalar en modo desarrollo
+# Install in development mode
 pip install -e ".[dev]"
 
-# Ejecutar tests
+# Run tests
 pytest
 
-# Formatear código
+# Format code
 black .
 ruff check --fix .
 ```
 
-## Preguntas
+## Questions
 
-Abre un issue con la etiqueta `question`.
+Open an issue with the `question` label.
 
-¡Gracias por contribuir! 🚀
+Thank you for contributing!

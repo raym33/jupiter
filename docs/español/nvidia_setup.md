@@ -1,15 +1,15 @@
-# Adding NVIDIA GPUs to the Cluster
+# Añadir GPUs NVIDIA al Cluster
 
-Jupiter supports hybrid clusters with Macs and NVIDIA GPUs working together.
+Jupiter soporta clusters híbridos con Macs y GPUs NVIDIA trabajando juntos.
 
-## Hybrid Architecture
+## Arquitectura Híbrida
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    HYBRID CLUSTER                           │
+│                    CLUSTER HÍBRIDO                          │
 │                                                             │
 │   ┌─────────────────────┐       ┌─────────────────────┐    │
-│   │   Mac Cluster       │       │   NVIDIA Nodes      │    │
+│   │   Cluster Mac       │       │   Nodos NVIDIA      │    │
 │   │   (MLX)             │       │   (PyTorch)         │    │
 │   │                     │       │                     │    │
 │   │ ┌─────┐ ┌─────┐    │       │ ┌─────────────────┐ │    │
@@ -23,27 +23,27 @@ Jupiter supports hybrid clusters with Macs and NVIDIA GPUs working together.
 │              └──────────┬──────────────────┘               │
 │                         │                                  │
 │              ┌──────────▼──────────┐                       │
-│              │   Synchronization   │                       │
+│              │   Sincronización    │                       │
 │              │   via Ethernet      │                       │
 │              └─────────────────────┘                       │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-## Requirements
+## Requisitos
 
-### NVIDIA Node
-- Linux (Ubuntu 22.04+ recommended)
-- NVIDIA GPU (RTX 3090, 4090, etc.)
+### Nodo NVIDIA
+- Linux (Ubuntu 22.04+ recomendado)
+- GPU NVIDIA (RTX 3090, 4090, etc.)
 - CUDA 12.0+
-- 24GB+ VRAM for 7B models
+- 24GB+ VRAM para modelos 7B
 
-### Connectivity
-- Ethernet network between Macs and NVIDIA PC
-- Passwordless SSH from the leader node
+### Conectividad
+- Red Ethernet entre Macs y PC NVIDIA
+- SSH sin contraseña desde el nodo líder
 
-## Step 1: Prepare the NVIDIA Node
+## Paso 1: Preparar el Nodo NVIDIA
 
-### Install CUDA
+### Instalar CUDA
 
 ```bash
 # Ubuntu
@@ -51,46 +51,46 @@ sudo apt update
 sudo apt install nvidia-driver-535 nvidia-cuda-toolkit
 ```
 
-### Install Python and Dependencies
+### Instalar Python y dependencias
 
 ```bash
 # Python 3.11
 sudo apt install python3.11 python3.11-venv
 
-# Clone Jupiter
+# Clonar Jupiter
 git clone https://github.com/raym33/jupiter.git
 cd jupiter
 
-# Create environment
+# Crear entorno
 python3.11 -m venv venv
 source venv/bin/activate
 
-# Install with NVIDIA support
+# Instalar con soporte NVIDIA
 pip install -e ".[nvidia]"
 ```
 
-### Verify CUDA
+### Verificar CUDA
 
 ```bash
 python -c "import torch; print(f'CUDA: {torch.cuda.is_available()}')"
 python -c "import torch; print(f'GPU: {torch.cuda.get_device_name()}')"
 ```
 
-## Step 2: Configure SSH
+## Paso 2: Configurar SSH
 
-From the Mac leader:
+Desde el Mac líder:
 
 ```bash
-ssh-copy-id user@192.168.1.100  # NVIDIA node IP
+ssh-copy-id usuario@192.168.1.100  # IP del nodo NVIDIA
 ```
 
-## Step 3: Configure cluster.yaml
+## Paso 3: Configurar cluster.yaml
 
 ```yaml
 backend: "mpi"
 
 nodes:
-  # Macs (as before)
+  # Macs (como antes)
   - host: "macbook.local"
     device_type: "mac"
     memory_gb: 24
@@ -101,59 +101,59 @@ nodes:
     memory_gb: 16
     role: "trainer"
 
-  # ... more Macs
+  # ... más Macs
 
-  # NVIDIA Node
+  # Nodo NVIDIA
   - host: "192.168.1.100"
-    name: "RTX 4090 Workstation"
+    name: "Workstation RTX 4090"
     device_type: "nvidia"
     memory_gb: 24  # VRAM
     chip: "RTX 4090"
     role: "trainer"
     connection_type: "ethernet"
-    ssh_user: "user"
+    ssh_user: "usuario"
 ```
 
-## How It Works
+## Cómo Funciona
 
-### Gradient Synchronization
+### Sincronización de Gradientes
 
-Mac and NVIDIA clusters don't share gradients directly (MLX vs PyTorch).
-Instead:
+Los clusters Mac y NVIDIA no comparten gradientes directamente (MLX vs PyTorch).
+En su lugar:
 
-1. Each cluster trains semi-independently
-2. Checkpoints are synced periodically
-3. Model averaging combines the weights
+1. Cada cluster entrena de forma semi-independiente
+2. Los checkpoints se sincronizan periódicamente
+3. Se usa "model averaging" para combinar los pesos
 
 ```
-Epoch 1:
-  Macs: train steps 1-100
-  NVIDIA: trains steps 1-100
-  → Average weights
+Época 1:
+  Macs: entrenan steps 1-100
+  NVIDIA: entrena steps 1-100
+  → Promediar pesos
 
-Epoch 2:
-  Macs: train steps 101-200 (with averaged weights)
-  NVIDIA: trains steps 101-200 (with averaged weights)
-  → Average weights
+Época 2:
+  Macs: entrenan steps 101-200 (con pesos promediados)
+  NVIDIA: entrena steps 101-200 (con pesos promediados)
+  → Promediar pesos
 
 ...
 ```
 
-### Advantages
+### Ventajas
 
-1. **More total compute**: Sum capacity of both clusters
-2. **Diversity**: Different initializations may improve generalization
-3. **Resilience**: If one cluster fails, the other continues
+1. **Más compute total**: Sumas la capacidad de ambos clusters
+2. **Diversidad**: Diferentes inicializaciones pueden mejorar generalización
+3. **Resiliencia**: Si un cluster falla, el otro continúa
 
-### Limitations
+### Limitaciones
 
-1. **Not pure data parallelism**: Gradients aren't averaged every step
-2. **Sync overhead**: Copying checkpoints takes time
-3. **Complexity**: Harder to debug
+1. **No es data parallelism puro**: Los gradientes no se promedian cada step
+2. **Overhead de sincronización**: Copiar checkpoints toma tiempo
+3. **Complejidad**: Más difícil de debuggear
 
-## NVIDIA-Only Mode
+## Modo Solo NVIDIA
 
-If you only have NVIDIA GPUs (no Macs):
+Si solo tienes GPUs NVIDIA (sin Macs):
 
 ```yaml
 backend: "torch"
@@ -163,7 +163,7 @@ nodes:
     device_type: "nvidia"
     memory_gb: 24
     chip: "RTX 4090"
-    role: "hybrid"  # Generates and trains
+    role: "hybrid"  # Genera y entrena
 
   - host: "gpu-server-2"
     device_type: "nvidia"
@@ -172,7 +172,7 @@ nodes:
     role: "trainer"
 ```
 
-## NVIDIA Optimizations
+## Optimizaciones para NVIDIA
 
 ### Flash Attention
 
@@ -180,7 +180,7 @@ nodes:
 pip install flash-attn --no-build-isolation
 ```
 
-In code:
+En el código:
 ```python
 config = ModelConfig.from_preset("1b")
 config.use_flash_attention = True
@@ -188,45 +188,45 @@ config.use_flash_attention = True
 
 ### Mixed Precision
 
-Enabled by default for NVIDIA. Uses FP16 for forward/backward and FP32 for accumulation.
+Habilitado por defecto para NVIDIA. Usa FP16 para forward/backward y FP32 para acumulación.
 
 ### Gradient Checkpointing
 
-For large models that don't fit in VRAM:
+Para modelos grandes que no caben en VRAM:
 
 ```python
-# In training config
+# En config de training
 gradient_checkpointing = True
 ```
 
-## Troubleshooting
+## Solución de Problemas
 
 ### "CUDA out of memory"
 
-1. Reduce batch size
-2. Enable gradient checkpointing
-3. Use smaller model (500M instead of 1B)
+1. Reducir batch size
+2. Habilitar gradient checkpointing
+3. Usar modelo más pequeño (500M en vez de 1B)
 
-### Slow synchronization
+### Sincronización lenta
 
-1. Check network speed (should be 1Gbps+)
-2. Increase sync interval
-3. Consider checkpoint compression
+1. Verificar velocidad de red (debería ser 1Gbps+)
+2. Aumentar intervalo de sincronización
+3. Considerar compresión de checkpoints
 
 ### "GPU not detected"
 
 ```bash
-# Verify driver
+# Verificar driver
 nvidia-smi
 
-# Verify CUDA
+# Verificar CUDA
 nvcc --version
 
-# Verify PyTorch
+# Verificar PyTorch
 python -c "import torch; print(torch.cuda.is_available())"
 ```
 
-## Next Steps
+## Próximos Pasos
 
-- [Set up Mac cluster](mac_cluster_setup.md)
-- [Create a new domain](new_domain.md)
+- [Configurar cluster de Macs](mac_cluster_setup.md)
+- [Crear un nuevo dominio](new_domain.md)

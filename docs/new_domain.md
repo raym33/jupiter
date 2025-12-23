@@ -1,36 +1,36 @@
-# Crear un Nuevo Dominio
+# Creating a New Domain
 
-Esta guía explica cómo configurar un nuevo dominio de especialización para Jupiter.
+This guide explains how to configure a new specialization domain for Jupiter.
 
-## ¿Qué es un Dominio?
+## What is a Domain?
 
-Un dominio define **qué tipo de experto** quieres entrenar. Incluye:
+A domain defines **what type of expert** you want to train. It includes:
 
-- **Fuentes de datos**: Dónde obtener información (docs, código, web)
-- **Templates de generación**: Cómo crear datos sintéticos
-- **Criterios de evaluación**: Cómo medir la calidad del modelo
+- **Data sources**: Where to get information (docs, code, web)
+- **Generation templates**: How to create synthetic data
+- **Evaluation criteria**: How to measure model quality
 
-## Paso 1: Crear el Archivo de Dominio
+## Step 1: Create the Domain File
 
 ```bash
-jupiter new-domain mi_dominio
+jupiter new-domain my_domain
 ```
 
-Esto crea `config/domains/mi_dominio.yaml` desde el template.
+This creates `config/domains/my_domain.yaml` from the template.
 
-## Paso 2: Configurar el Dominio
+## Step 2: Configure the Domain
 
-Edita el archivo YAML:
+Edit the YAML file:
 
-### Información Básica
+### Basic Information
 
 ```yaml
 domain:
   name: "python_expert"
-  description: "Experto en programación Python"
-  language: "es"  # o "en"
+  description: "Expert in Python programming"
+  language: "en"  # or "es"
 
-  # Palabras clave para filtrar contenido relevante
+  # Keywords to filter relevant content
   keywords:
     - "python"
     - "pip"
@@ -39,22 +39,22 @@ domain:
     - "pandas"
     - "numpy"
 
-  # Contenido a evitar
+  # Content to avoid
   negative_keywords:
-    - "javascript"  # Otro lenguaje
+    - "javascript"  # Different language
     - "java"
 ```
 
-### Fuentes de Datos
+### Data Sources
 
 ```yaml
 data_sources:
-  # Documentación oficial
+  # Official documentation
   documentation:
     - "https://docs.python.org/3/"
     - "https://docs.djangoproject.com/"
 
-  # Código de GitHub
+  # GitHub code
   github:
     repos:
       - "python/cpython"
@@ -69,115 +69,115 @@ data_sources:
       - "*_test.py"
       - "docs/conf.py"
 
-  # Sitios web
+  # Websites
   websites:
     - "https://realpython.com"
     - "https://www.fullstackpython.com"
 
-  # Foros
+  # Forums
   forums:
     - "https://discuss.python.org"
 ```
 
-### Templates de Generación
+### Generation Templates
 
-Los templates definen cómo el LLM generará datos sintéticos:
+Templates define how the LLM will generate synthetic data:
 
 ```yaml
 generation:
   templates:
-    # Preguntas y Respuestas
+    # Questions and Answers
     - type: "qa"
       system_prompt: |
-        Eres un experto en Python con 15 años de experiencia.
-        Respondes de forma clara y con ejemplos de código.
+        You are a Python expert with 15 years of experience.
+        You answer clearly with code examples.
       prompt: |
-        Genera una pregunta técnica sobre {topic} en Python
-        y su respuesta detallada.
+        Generate a technical question about {topic} in Python
+        and its detailed answer.
 
-        Incluye:
-        1. Explicación del concepto
-        2. Código de ejemplo
-        3. Errores comunes
-        4. Mejores prácticas
+        Include:
+        1. Concept explanation
+        2. Code example
+        3. Common errors
+        4. Best practices
       topics:
-        - "decoradores"
-        - "generadores"
+        - "decorators"
+        - "generators"
         - "context managers"
         - "asyncio"
         - "type hints"
         - "dataclasses"
 
-    # Tutoriales
+    # Tutorials
     - type: "tutorial"
       system_prompt: |
-        Eres un instructor de Python.
+        You are a Python instructor.
       prompt: |
-        Crea un tutorial paso a paso para {task}.
+        Create a step-by-step tutorial for {task}.
       tasks:
-        - "crear una API REST con FastAPI"
-        - "web scraping con BeautifulSoup"
-        - "análisis de datos con pandas"
+        - "create a REST API with FastAPI"
+        - "web scraping with BeautifulSoup"
+        - "data analysis with pandas"
 
     # Debugging
     - type: "debug"
       prompt: |
-        Genera un error común en Python relacionado con {topic}.
-        Incluye el traceback y la solución.
+        Generate a common Python error related to {topic}.
+        Include the traceback and solution.
       topics:
         - "IndentationError"
         - "ImportError"
         - "AttributeError"
         - "TypeError"
 
-  # Proporción de cada tipo
+  # Proportion of each type
   template_weights:
     qa: 0.40
     tutorial: 0.35
     debug: 0.25
 ```
 
-### Evaluación
+### Evaluation
 
 ```yaml
 evaluation:
   benchmarks:
-    - "code_syntax"      # ¿El código es válido?
-    - "best_practices"   # ¿Sigue PEP8?
-    - "completeness"     # ¿La respuesta es completa?
+    - "code_syntax"      # Is the code valid?
+    - "best_practices"   # Follows PEP8?
+    - "completeness"     # Is the answer complete?
 
   min_accuracy: 0.75
   min_coherence: 0.80
 ```
 
-### Proporción de Datos
+### Data Mix Ratio
 
 ```yaml
 mix_ratio:
-  real_docs: 0.30        # 30% documentación real
-  real_code: 0.25        # 25% código real
-  synthetic_qa: 0.20     # 20% Q&A generadas
+  real_docs: 0.30        # 30% real documentation
+  real_code: 0.25        # 25% real code
+  synthetic_qa: 0.20     # 20% generated Q&A
   synthetic_tutorials: 0.15
   synthetic_debug: 0.10
 ```
 
-## Ejemplos de Dominios
+## Domain Examples
 
-### Química Universitaria
+### University Chemistry
 
 ```yaml
 domain:
   name: "chemistry"
-  description: "Experto en química universitaria"
-  language: "es"
+  description: "Expert in university chemistry"
+  language: "en"
 
   keywords:
-    - "átomo"
-    - "molécula"
-    - "enlace"
-    - "reacción"
-    - "equilibrio"
-    - "termodinámica"
+    - "atom"
+    - "molecule"
+    - "bond"
+    - "reaction"
+    - "equilibrium"
+    - "thermodynamics"
 
 data_sources:
   documentation:
@@ -190,71 +190,71 @@ generation:
   templates:
     - type: "qa"
       prompt: |
-        Genera una pregunta de examen universitario sobre {topic}
-        con su respuesta detallada y explicación paso a paso.
+        Generate a university exam question about {topic}
+        with its detailed answer and step-by-step explanation.
       topics:
-        - "estequiometría"
-        - "equilibrio químico"
-        - "cinética"
-        - "termodinámica"
-        - "electroquímica"
+        - "stoichiometry"
+        - "chemical equilibrium"
+        - "kinetics"
+        - "thermodynamics"
+        - "electrochemistry"
 
     - type: "explanation"
       prompt: |
-        Explica el concepto de {topic} como si fueras un profesor.
-        Incluye ejemplos y analogías.
+        Explain the concept of {topic} as if you were a professor.
+        Include examples and analogies.
       topics:
-        - "orbitales atómicos"
-        - "hibridación"
-        - "resonancia"
+        - "atomic orbitals"
+        - "hybridization"
+        - "resonance"
 ```
 
-### Medicina (Radiología)
+### Medicine (Radiology)
 
 ```yaml
 domain:
   name: "radiology"
-  description: "Experto en interpretación radiológica"
-  language: "es"
+  description: "Expert in radiological interpretation"
+  language: "en"
 
   keywords:
-    - "radiografía"
-    - "tomografía"
-    - "resonancia"
-    - "ecografía"
-    - "diagnóstico"
+    - "x-ray"
+    - "CT scan"
+    - "MRI"
+    - "ultrasound"
+    - "diagnosis"
 
 generation:
   templates:
     - type: "qa"
       prompt: |
-        Describe los hallazgos radiológicos típicos de {condition}
-        y el diagnóstico diferencial.
+        Describe the typical radiological findings of {condition}
+        and the differential diagnosis.
       topics:
-        - "neumonía"
-        - "fractura de cadera"
-        - "tumor cerebral"
-        - "derrame pleural"
+        - "pneumonia"
+        - "hip fracture"
+        - "brain tumor"
+        - "pleural effusion"
 ```
 
-## Paso 3: Probar el Dominio
+## Step 3: Test the Domain
 
 ```bash
-# Verificar que el dominio carga correctamente
+# Verify the domain loads correctly
 jupiter check
 
-# Ejecutar un test rápido
-jupiter start --domain mi_dominio --epochs 1 --no-collect
+# Run a quick test
+jupiter start --domain my_domain --epochs 1 --no-collect
 ```
 
-## Consejos
+## Tips
 
-1. **Empieza simple**: Pocos topics, pocas fuentes
-2. **Itera**: Añade más fuentes y templates gradualmente
-3. **Revisa la calidad**: Los datos sintéticos deben ser útiles
-4. **Balancea**: Mantén proporción de datos reales vs sintéticos
+1. **Start simple**: Few topics, few sources
+2. **Iterate**: Add more sources and templates gradually
+3. **Review quality**: Synthetic data should be useful
+4. **Balance**: Maintain real vs synthetic data ratio
 
-## Siguientes Pasos
+## Next Steps
 
-- [Configurar cluster de Macs](mac_cluster_setup.md)
-- [Entender auto-mejora](self_improvement.md)
+- [Set up Mac cluster](mac_cluster_setup.md)
+- [Understand self-improvement](self_improvement.md)

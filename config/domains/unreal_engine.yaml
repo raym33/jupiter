@@ -1,16 +1,16 @@
 # =============================================================================
-# DOMINIO: UNREAL ENGINE 5
+# DOMAIN: UNREAL ENGINE 5
 # =============================================================================
 #
-# Configuración para entrenar un experto en desarrollo de videojuegos
-# con Unreal Engine 5 (C++, Blueprints, sistemas de juego).
+# Configuration for training an expert in video game development
+# with Unreal Engine 5 (C++, Blueprints, game systems).
 #
 # =============================================================================
 
 domain:
   name: "unreal_engine"
-  description: "Experto en desarrollo de videojuegos con Unreal Engine 5"
-  language: "es"
+  description: "Expert in video game development with Unreal Engine 5"
+  language: "en"
 
   keywords:
     - "unreal"
@@ -43,14 +43,14 @@ domain:
     - "multiplayer"
 
   negative_keywords:
-    - "unity"  # Motor diferente
+    - "unity"  # Different engine
     - "godot"
     - "crack"
     - "pirate"
     - "free download"
 
 # =============================================================================
-# FUENTES DE DATOS
+# DATA SOURCES
 # =============================================================================
 data_sources:
   documentation:
@@ -96,47 +96,46 @@ data_sources:
   huggingface_datasets: []
 
 # =============================================================================
-# GENERACIÓN DE DATOS SINTÉTICOS
+# SYNTHETIC DATA GENERATION
 # =============================================================================
 generation:
   templates:
     # -------------------------------------------------------------------------
-    # Preguntas y respuestas técnicas
+    # Technical questions and answers
     # -------------------------------------------------------------------------
     - type: "qa"
       system_prompt: |
-        Eres un desarrollador senior de videojuegos con 10+ años de experiencia
-        en Unreal Engine. Explicas conceptos de forma clara y práctica,
-        siempre incluyendo código C++ o Blueprints cuando es relevante.
-        Respondes en español.
+        You are a senior video game developer with 10+ years of experience
+        in Unreal Engine. You explain concepts clearly and practically,
+        always including C++ code or Blueprints when relevant.
       prompt: |
-        Genera una pregunta técnica avanzada sobre {topic} en Unreal Engine 5.
+        Generate an advanced technical question about {topic} in Unreal Engine 5.
 
-        La respuesta debe incluir:
-        1. Explicación clara del concepto
-        2. Código C++ de ejemplo (si aplica)
-        3. Cómo hacerlo en Blueprints (si aplica)
-        4. Mejores prácticas y errores comunes
-        5. Consideraciones de rendimiento
+        The answer should include:
+        1. Clear explanation of the concept
+        2. Example C++ code (if applicable)
+        3. How to do it in Blueprints (if applicable)
+        4. Best practices and common mistakes
+        5. Performance considerations
 
-        Formato:
-        **Pregunta:** [pregunta técnica]
+        Format:
+        **Question:** [technical question]
 
-        **Respuesta:**
-        [respuesta detallada con código]
+        **Answer:**
+        [detailed answer with code]
       topics:
-        # Fundamentos
+        # Fundamentals
         - "Actor lifecycle (BeginPlay, Tick, EndPlay)"
-        - "Components y su jerarquía"
-        - "UObject y garbage collection"
-        - "UPROPERTY y UFUNCTION macros"
-        - "Delegates y eventos"
+        - "Components and their hierarchy"
+        - "UObject and garbage collection"
+        - "UPROPERTY and UFUNCTION macros"
+        - "Delegates and events"
 
         # Gameplay
         - "Character movement component"
         - "Player Controller vs AI Controller"
-        - "GameMode y GameState"
-        - "Pawn y Character"
+        - "GameMode and GameState"
+        - "Pawn and Character"
         - "Input system (Enhanced Input)"
 
         # Blueprints
@@ -146,162 +145,161 @@ generation:
         - "Blueprint function libraries"
         - "Data-only blueprints"
 
-        # Sistemas avanzados
+        # Advanced systems
         - "Gameplay Ability System (GAS)"
-        - "Behavior Trees para AI"
+        - "Behavior Trees for AI"
         - "Environment Query System (EQS)"
-        - "Blackboard y AI Perception"
+        - "Blackboard and AI Perception"
 
-        # Gráficos
-        - "Material Editor y shaders"
+        # Graphics
+        - "Material Editor and shaders"
         - "Niagara particle system"
-        - "Lumen y Nanite"
+        - "Lumen and Nanite"
         - "Post-process effects"
         - "Level streaming"
 
         # Networking
-        - "Replicación de actores"
+        - "Actor replication"
         - "RPCs (Server, Client, Multicast)"
         - "Network relevancy"
         - "Client-side prediction"
 
-        # Animación
+        # Animation
         - "Animation Blueprints"
         - "State machines"
         - "Blend spaces"
         - "Animation montages"
-        - "IK y procedural animation"
+        - "IK and procedural animation"
 
         # UI
         - "UMG Widget system"
         - "Slate vs UMG"
-        - "HUD y menús"
-        - "Data binding en UI"
+        - "HUD and menus"
+        - "Data binding in UI"
 
-        # Optimización
-        - "Profiling con Unreal Insights"
-        - "LODs y culling"
+        # Optimization
+        - "Profiling with Unreal Insights"
+        - "LODs and culling"
         - "Async loading"
         - "Memory management"
 
     # -------------------------------------------------------------------------
-    # Tutoriales paso a paso
+    # Step-by-step tutorials
     # -------------------------------------------------------------------------
     - type: "tutorial"
       system_prompt: |
-        Eres un instructor de Unreal Engine que crea tutoriales claros
-        y fáciles de seguir. Siempre incluyes código completo y explicaciones
-        de cada paso. Respondes en español.
+        You are an Unreal Engine instructor who creates clear
+        and easy-to-follow tutorials. You always include complete code and explanations
+        for each step.
       prompt: |
-        Crea un tutorial completo paso a paso para {task} en Unreal Engine 5.
+        Create a complete step-by-step tutorial for {task} in Unreal Engine 5.
 
-        El tutorial debe incluir:
-        1. Objetivo del tutorial
-        2. Requisitos previos
-        3. Pasos numerados con explicaciones
-        4. Código C++ completo con comentarios
-        5. Configuración en el Editor (si aplica)
-        6. Blueprint alternativo (si aplica)
-        7. Testing y verificación
-        8. Posibles problemas y soluciones
+        The tutorial should include:
+        1. Tutorial objective
+        2. Prerequisites
+        3. Numbered steps with explanations
+        4. Complete C++ code with comments
+        5. Editor configuration (if applicable)
+        6. Blueprint alternative (if applicable)
+        7. Testing and verification
+        8. Potential issues and solutions
 
-        Formato:
+        Format:
         # Tutorial: {task}
 
-        ## Objetivo
-        [descripción del resultado final]
+        ## Objective
+        [description of the final result]
 
-        ## Requisitos previos
-        - [requisito 1]
-        - [requisito 2]
+        ## Prerequisites
+        - [prerequisite 1]
+        - [prerequisite 2]
 
-        ## Paso 1: [título]
-        [explicación detallada con código]
+        ## Step 1: [title]
+        [detailed explanation with code]
 
         ...
       tasks:
-        # Sistemas de juego
-        - "Crear un sistema de inventario con drag & drop"
-        - "Implementar un sistema de diálogos con branching"
-        - "Crear un sistema de quests/misiones"
-        - "Implementar un sistema de crafting"
-        - "Crear un sistema de save/load game"
+        # Game systems
+        - "Create an inventory system with drag & drop"
+        - "Implement a dialogue system with branching"
+        - "Create a quest/mission system"
+        - "Implement a crafting system"
+        - "Create a save/load game system"
 
         # Character
-        - "Crear un character controller en tercera persona"
-        - "Implementar un sistema de combate cuerpo a cuerpo"
-        - "Crear un sistema de habilidades con cooldowns"
-        - "Implementar wall running y parkour"
-        - "Crear un sistema de stamina y stats"
+        - "Create a third-person character controller"
+        - "Implement a melee combat system"
+        - "Create an ability system with cooldowns"
+        - "Implement wall running and parkour"
+        - "Create a stamina and stats system"
 
         # AI
-        - "Crear un enemigo con patrullaje y detección"
-        - "Implementar un companion/follower NPC"
-        - "Crear un sistema de facciones para AI"
-        - "Implementar AI que usa cover"
+        - "Create an enemy with patrol and detection"
+        - "Implement a companion/follower NPC"
+        - "Create a faction system for AI"
+        - "Implement AI that uses cover"
 
         # Multiplayer
-        - "Configurar un proyecto multiplayer básico"
-        - "Implementar lobby y matchmaking"
-        - "Crear un sistema de chat"
-        - "Sincronizar inventario en multiplayer"
+        - "Set up a basic multiplayer project"
+        - "Implement lobby and matchmaking"
+        - "Create a chat system"
+        - "Synchronize inventory in multiplayer"
 
         # UI/UX
-        - "Crear un menú principal con opciones"
-        - "Implementar un HUD con health bar y minimapa"
-        - "Crear un sistema de notificaciones en pantalla"
-        - "Implementar subtítulos dinámicos"
+        - "Create a main menu with options"
+        - "Implement a HUD with health bar and minimap"
+        - "Create an on-screen notification system"
+        - "Implement dynamic subtitles"
 
         # Procedural
-        - "Generar dungeons procedurales"
-        - "Crear terreno procedural con biomas"
-        - "Implementar spawn system para loot"
+        - "Generate procedural dungeons"
+        - "Create procedural terrain with biomes"
+        - "Implement a spawn system for loot"
 
     # -------------------------------------------------------------------------
-    # Debugging y solución de problemas
+    # Debugging and troubleshooting
     # -------------------------------------------------------------------------
     - type: "debug"
       system_prompt: |
-        Eres un experto en debugging de Unreal Engine. Ayudas a resolver
-        problemas comunes y errores de compilación/runtime.
-        Respondes en español.
+        You are an expert in Unreal Engine debugging. You help solve
+        common problems and compilation/runtime errors.
       prompt: |
-        Genera un problema/error común relacionado con {topic} en Unreal Engine 5.
+        Generate a common problem/error related to {topic} in Unreal Engine 5.
 
-        Incluye:
-        1. Descripción del problema
-        2. Mensaje de error exacto (si aplica)
-        3. Código que causa el error
-        4. Causa raíz del problema
-        5. Solución paso a paso
-        6. Cómo prevenir este error en el futuro
+        Include:
+        1. Problem description
+        2. Exact error message (if applicable)
+        3. Code that causes the error
+        4. Root cause of the problem
+        5. Step-by-step solution
+        6. How to prevent this error in the future
 
-        Formato:
-        ## Problema: [título descriptivo]
+        Format:
+        ## Problem: [descriptive title]
 
-        ### Síntomas
-        [qué ve el usuario]
+        ### Symptoms
+        [what the user sees]
 
         ### Error
         ```
-        [mensaje de error]
+        [error message]
         ```
 
-        ### Código problemático
+        ### Problematic code
         ```cpp
-        [código]
+        [code]
         ```
 
-        ### Causa
-        [explicación]
+        ### Cause
+        [explanation]
 
-        ### Solución
-        [pasos para resolver]
+        ### Solution
+        [steps to resolve]
 
-        ### Prevención
-        [cómo evitarlo]
+        ### Prevention
+        [how to avoid it]
       topics:
-        - "Access violation en punteros"
+        - "Access violation on pointers"
         - "Nullptr exceptions"
         - "Blueprint compilation errors"
         - "Circular dependencies"
@@ -318,46 +316,45 @@ generation:
         - "Material shader errors"
 
     # -------------------------------------------------------------------------
-    # Explicaciones conceptuales
+    # Conceptual explanations
     # -------------------------------------------------------------------------
     - type: "explanation"
       system_prompt: |
-        Eres un arquitecto de software especializado en Unreal Engine.
-        Explicas conceptos de arquitectura y diseño de forma profunda pero accesible.
-        Respondes en español.
+        You are a software architect specialized in Unreal Engine.
+        You explain architecture and design concepts in a deep but accessible way.
       prompt: |
-        Explica en profundidad el concepto de {topic} en Unreal Engine 5.
+        Explain in depth the concept of {topic} in Unreal Engine 5.
 
-        La explicación debe incluir:
-        1. Qué es y para qué sirve
-        2. Cómo funciona internamente
-        3. Cuándo usarlo y cuándo no
-        4. Comparación con alternativas
-        5. Ejemplos de uso real
-        6. Mejores prácticas
+        The explanation should include:
+        1. What it is and what it's for
+        2. How it works internally
+        3. When to use it and when not to
+        4. Comparison with alternatives
+        5. Real-world usage examples
+        6. Best practices
 
-        Formato:
+        Format:
         # {topic}
 
-        ## ¿Qué es?
-        [definición clara]
+        ## What is it?
+        [clear definition]
 
-        ## ¿Cómo funciona?
-        [explicación técnica]
+        ## How does it work?
+        [technical explanation]
 
-        ## ¿Cuándo usarlo?
-        [casos de uso]
+        ## When to use it?
+        [use cases]
 
-        ## Alternativas
-        [comparación]
+        ## Alternatives
+        [comparison]
 
-        ## Ejemplo práctico
-        [código y explicación]
+        ## Practical example
+        [code and explanation]
 
-        ## Mejores prácticas
-        [recomendaciones]
+        ## Best practices
+        [recommendations]
       topics:
-        - "Subsystems en UE5"
+        - "Subsystems in UE5"
         - "Gameplay Tags"
         - "Data Assets vs Data Tables"
         - "Soft vs Hard references"
@@ -374,15 +371,15 @@ generation:
     explanation: 0.15
 
 # =============================================================================
-# EVALUACIÓN
+# EVALUATION
 # =============================================================================
 evaluation:
   benchmarks:
-    - "code_syntax"          # ¿El código C++ es sintácticamente correcto?
-    - "ue_api_accuracy"      # ¿Usa la API de UE correctamente?
-    - "best_practices"       # ¿Sigue las mejores prácticas?
-    - "explanation_clarity"  # ¿La explicación es clara?
-    - "completeness"         # ¿La respuesta es completa?
+    - "code_syntax"          # Is the C++ code syntactically correct?
+    - "ue_api_accuracy"      # Does it use the UE API correctly?
+    - "best_practices"       # Does it follow best practices?
+    - "explanation_clarity"  # Is the explanation clear?
+    - "completeness"         # Is the answer complete?
 
   custom_eval_file: null
 
@@ -390,7 +387,7 @@ evaluation:
   min_coherence: 0.80
 
 # =============================================================================
-# PROPORCIÓN DE DATOS
+# DATA PROPORTION
 # =============================================================================
 mix_ratio:
   real_docs: 0.25

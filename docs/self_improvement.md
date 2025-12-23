@@ -1,144 +1,144 @@
-# Ciclo de Auto-Mejora
+# Self-Improvement Cycle
 
-Jupiter implementa un ciclo donde el modelo entrenado puede reemplazar al modelo generador cuando lo supera.
+Jupiter implements a cycle where the trained model can replace the generator model when it surpasses it.
 
-## Concepto
+## Concept
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                    CICLO DE AUTO-MEJORA                         │
+│                    SELF-IMPROVEMENT CYCLE                       │
 │                                                                 │
 │   ┌──────────────┐                                              │
-│   │  GENERADOR   │ ◄─────────────────────────────────┐          │
+│   │  GENERATOR   │ ◄─────────────────────────────────┐          │
 │   │  (Llama 3B)  │                                   │          │
 │   └──────┬───────┘                                   │          │
 │          │                                           │          │
-│          │ genera datos                              │          │
+│          │ generates data                            │          │
 │          ▼                                           │          │
 │   ┌──────────────┐                                   │          │
-│   │    DATOS     │                                   │          │
-│   │  SINTÉTICOS  │                                   │          │
+│   │  SYNTHETIC   │                                   │          │
+│   │    DATA      │                                   │          │
 │   └──────┬───────┘                                   │          │
 │          │                                           │          │
-│          │ + datos reales                            │          │
+│          │ + real data                               │          │
 │          ▼                                           │          │
 │   ┌──────────────┐                                   │          │
+│   │ DISTRIBUTED  │                                   │          │
 │   │  TRAINING    │                                   │          │
-│   │  DISTRIBUIDO │                                   │          │
 │   └──────┬───────┘                                   │          │
 │          │                                           │          │
 │          ▼                                           │          │
 │   ┌──────────────┐      ┌──────────────┐            │          │
-│   │   MODELO     │      │  EVALUACIÓN  │            │          │
-│   │  ENTRENADO   │ ───► │              │            │          │
+│   │   TRAINED    │      │  EVALUATION  │            │          │
+│   │    MODEL     │ ───► │              │            │          │
 │   └──────────────┘      └──────┬───────┘            │          │
 │                                │                     │          │
-│                                │ ¿supera al          │          │
-│                                │ generador?          │          │
+│                                │ surpasses           │          │
+│                                │ generator?          │          │
 │                                │                     │          │
 │                         ┌──────┴──────┐              │          │
 │                         │             │              │          │
-│                    NO   ▼        SI   ▼              │          │
-│                  continuar      REEMPLAZAR ──────────┘          │
-│                  training       GENERADOR                       │
+│                    NO   ▼        YES  ▼              │          │
+│                  continue       REPLACE ─────────────┘          │
+│                  training       GENERATOR                       │
 │                                                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## ¿Por qué funciona?
+## Why It Works
 
-### El modelo entrenado vs el generador
+### Trained Model vs Generator
 
-- **Generador (ej: Llama 3B)**: Conocimiento general, puede generar sobre cualquier tema
-- **Modelo entrenado (1B)**: Especializado en el dominio específico
+- **Generator (e.g., Llama 3B)**: General knowledge, can generate about any topic
+- **Trained model (1B)**: Specialized in the specific domain
 
-Aunque el modelo entrenado es más pequeño, puede superar al generador **en el dominio específico** porque:
+Although the trained model is smaller, it can surpass the generator **in the specific domain** because:
 
-1. Ha visto miles de ejemplos del dominio
-2. Está optimizado para ese tipo de contenido
-3. Ha aprendido patrones específicos del dominio
+1. It has seen thousands of domain examples
+2. It's optimized for that type of content
+3. It has learned domain-specific patterns
 
-### Evitando Model Collapse
+### Avoiding Model Collapse
 
-El riesgo de usar un modelo para generar datos de entrenamiento para sí mismo es el "model collapse": el modelo converge a un estado degenerado.
+The risk of using a model to generate training data for itself is "model collapse": the model converges to a degenerate state.
 
-Jupiter lo evita con:
+Jupiter avoids this with:
 
-1. **Ancla de datos reales**: Siempre incluye 30-40% de datos reales (documentación, código)
-2. **Filtrado de calidad**: Descarta generaciones de baja calidad
-3. **Deduplicación**: Evita que el modelo memorice sus propias generaciones
-4. **Evaluación rigurosa**: Solo reemplaza el generador si hay mejora real
+1. **Real data anchor**: Always includes 30-40% real data (documentation, code)
+2. **Quality filtering**: Discards low-quality generations
+3. **Deduplication**: Prevents model from memorizing its own generations
+4. **Rigorous evaluation**: Only replaces generator if there's real improvement
 
-## Configuración
+## Configuration
 
-En `config/cluster.yaml` o en código:
+In `config/cluster.yaml` or in code:
 
 ```yaml
 self_improvement:
-  # Evaluar cada N steps
+  # Evaluate every N steps
   eval_every_steps: 5000
 
-  # Umbral de mejora para reemplazar generador
-  improvement_threshold: 0.05  # 5% mejor
+  # Improvement threshold to replace generator
+  improvement_threshold: 0.05  # 5% better
 
-  # Mínimo de steps antes de considerar reemplazo
+  # Minimum steps before considering replacement
   min_steps_before_replace: 10000
 
-  # Muestras para benchmark
+  # Samples for benchmark
   benchmark_samples: 500
 
-  # Seguridad
+  # Safety
   keep_last_n_checkpoints: 3
-  always_keep_base_generator: true  # Nunca borrar el Llama original
+  always_keep_base_generator: true  # Never delete original Llama
 ```
 
-## Métricas de Evaluación
+## Evaluation Metrics
 
-Jupiter evalúa el modelo en varias dimensiones:
+Jupiter evaluates the model across several dimensions:
 
 ### 1. Accuracy (40%)
-- ¿Las respuestas son correctas?
-- ¿El código compila/ejecuta?
-- ¿Los hechos son precisos?
+- Are the answers correct?
+- Does the code compile/run?
+- Are the facts accurate?
 
 ### 2. Coherence (30%)
-- ¿Las respuestas tienen sentido?
-- ¿Fluyen lógicamente?
-- ¿Están bien estructuradas?
+- Do the answers make sense?
+- Do they flow logically?
+- Are they well structured?
 
 ### 3. Domain Knowledge (30%)
-- ¿Usa terminología correcta del dominio?
-- ¿Demuestra conocimiento profundo?
-- ¿Sigue las mejores prácticas del campo?
+- Uses correct domain terminology?
+- Demonstrates deep knowledge?
+- Follows field best practices?
 
-## El Proceso de Upgrade
+## The Upgrade Process
 
-Cuando el modelo entrenado supera al generador:
+When the trained model surpasses the generator:
 
 ```
-1. Guardar checkpoint del modelo entrenado
-2. Convertir a formato de generador
-3. Actualizar referencia del generador
-4. Guardar generador anterior en historial
-5. Regenerar datos sintéticos con nuevo generador
-6. Continuar training con nuevos datos
+1. Save trained model checkpoint
+2. Convert to generator format
+3. Update generator reference
+4. Save previous generator in history
+5. Regenerate synthetic data with new generator
+6. Continue training with new data
 ```
 
-### Historial de Generadores
+### Generator History
 
-Jupiter mantiene un historial:
+Jupiter maintains a history:
 
 ```
 generators/
-├── generator_v1/  (Llama 3B original)
-├── generator_v2/  (Tu modelo después de 10k steps)
-├── generator_v3/  (Tu modelo después de 25k steps)
+├── generator_v1/  (Original Llama 3B)
+├── generator_v2/  (Your model after 10k steps)
+├── generator_v3/  (Your model after 25k steps)
 └── current -> generator_v3
 ```
 
 ### Rollback
 
-Si algo sale mal, puedes volver a un generador anterior:
+If something goes wrong, you can revert to a previous generator:
 
 ```python
 from jupiter.orchestrator import SelfImprover
@@ -147,39 +147,39 @@ improver = SelfImprover(config, trainer)
 await improver.rollback_generator()
 ```
 
-## Ejemplo de Progreso
+## Progress Example
 
 ```
-Época 1-5:
-  Generador: Llama 3B
+Epoch 1-5:
+  Generator: Llama 3B
   Eval score: 0.65
 
-Época 6-10:
-  Generador: Llama 3B
+Epoch 6-10:
+  Generator: Llama 3B
   Eval score: 0.72 (+0.07)
-  → No supera umbral de reemplazo
+  → Doesn't exceed replacement threshold
 
-Época 11-15:
-  Generador: Llama 3B
+Epoch 11-15:
+  Generator: Llama 3B
   Eval score: 0.78 (+0.13)
-  → ¡UPGRADE! Modelo entrenado es ahora el generador
+  → UPGRADE! Trained model is now the generator
 
-Época 16-20:
-  Generador: Tu modelo v1
+Epoch 16-20:
+  Generator: Your model v1
   Eval score: 0.81 (+0.03)
-  → Datos generados son de mejor calidad
+  → Generated data is higher quality
 
-Época 21-25:
-  Generador: Tu modelo v1
+Epoch 21-25:
+  Generator: Your model v1
   Eval score: 0.85 (+0.07)
-  → ¡UPGRADE! Tu modelo v2 es ahora el generador
+  → UPGRADE! Your model v2 is now the generator
 
 ...
 ```
 
-## Visualizando el Progreso
+## Visualizing Progress
 
-Jupiter guarda métricas que puedes visualizar:
+Jupiter saves metrics you can visualize:
 
 ```python
 import json
@@ -188,34 +188,34 @@ import matplotlib.pyplot as plt
 with open("pipeline_state.json") as f:
     state = json.load(f)
 
-# Historial de scores (hipotético)
+# Score history (hypothetical)
 epochs = range(1, state["current_epoch"] + 1)
-scores = [...]  # Cargar de logs
+scores = [...]  # Load from logs
 
 plt.plot(epochs, scores)
-plt.axhline(y=0.7, color='r', linestyle='--', label='Umbral generador original')
-plt.xlabel("Época")
+plt.axhline(y=0.7, color='r', linestyle='--', label='Original generator threshold')
+plt.xlabel("Epoch")
 plt.ylabel("Eval Score")
-plt.title("Progreso de Auto-Mejora")
+plt.title("Self-Improvement Progress")
 plt.legend()
 plt.show()
 ```
 
-## Limitaciones
+## Limitations
 
-1. **No es magia**: El modelo no puede aprender lo que no está en los datos
-2. **Ceiling effect**: Eventualmente alcanzarás un límite
-3. **Especialización**: El modelo será muy bueno en el dominio pero puede olvidar conocimiento general
+1. **Not magic**: The model can't learn what's not in the data
+2. **Ceiling effect**: You'll eventually hit a limit
+3. **Specialization**: Model will be very good in domain but may forget general knowledge
 
-## Recomendaciones
+## Recommendations
 
-1. **Empieza con buen generador**: Llama 3B o Mistral 7B
-2. **Datos reales de calidad**: Son el ancla que evita el collapse
-3. **Evalúa frecuentemente**: Detecta problemas temprano
-4. **Guarda checkpoints**: Por si necesitas rollback
-5. **Monitorea diversidad**: Si las generaciones se vuelven repetitivas, hay problema
+1. **Start with good generator**: Llama 3B or Mistral 7B
+2. **Quality real data**: It's the anchor that prevents collapse
+3. **Evaluate frequently**: Detect problems early
+4. **Save checkpoints**: In case you need rollback
+5. **Monitor diversity**: If generations become repetitive, there's a problem
 
-## Próximos Pasos
+## Next Steps
 
-- [Configurar cluster](mac_cluster_setup.md)
-- [Crear nuevo dominio](new_domain.md)
+- [Set up cluster](mac_cluster_setup.md)
+- [Create new domain](new_domain.md)

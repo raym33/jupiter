@@ -1,121 +1,121 @@
-# Configuración de un Cluster de Macs
+# Mac Cluster Setup
 
-Esta guía explica cómo configurar un cluster de Macs con Apple Silicon para training distribuido con Jupiter.
+This guide explains how to set up a cluster of Apple Silicon Macs for distributed training with Jupiter.
 
-## Requisitos de Hardware
+## Hardware Requirements
 
-### Mínimo
-- 2 Macs con Apple Silicon (M1/M2/M3/M4/M5)
-- 16GB RAM por Mac
-- Conexión Thunderbolt o Ethernet entre Macs
+### Minimum
+- 2 Macs with Apple Silicon (M1/M2/M3/M4/M5)
+- 16GB RAM per Mac
+- Thunderbolt or Ethernet connection between Macs
 
-### Recomendado
-- 4-5 Macs con M4 o superior
-- 16-24GB RAM por Mac
-- Conexión Thunderbolt 4/5 para máximo rendimiento
-- 1 Mac dedicado como generador (mayor RAM)
+### Recommended
+- 4-5 Macs with M4 or newer
+- 16-24GB RAM per Mac
+- Thunderbolt 4/5 connection for maximum performance
+- 1 Mac dedicated as generator (higher RAM preferred)
 
-## Paso 1: Preparar cada Mac
+## Step 1: Prepare Each Mac
 
-### 1.1 Instalar dependencias del sistema
+### 1.1 Install System Dependencies
 
-En **cada Mac** del cluster:
+On **each Mac** in the cluster:
 
 ```bash
-# Instalar Xcode Command Line Tools
+# Install Xcode Command Line Tools
 xcode-select --install
 
-# Instalar Homebrew (si no está instalado)
+# Install Homebrew (if not installed)
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-# Instalar MPI
+# Install MPI
 brew install mpich
 ```
 
-### 1.2 Instalar Jupiter
+### 1.2 Install Jupiter
 
 ```bash
-# Clonar el repositorio
+# Clone the repository
 git clone https://github.com/raym33/jupiter.git
 cd jupiter
 
-# Crear entorno virtual
+# Create virtual environment
 python3.11 -m venv venv
 source venv/bin/activate
 
-# Instalar Jupiter con dependencias para Mac
+# Install Jupiter with Mac dependencies
 pip install -e ".[mac]"
 ```
 
-### 1.3 Verificar MLX
+### 1.3 Verify MLX
 
 ```bash
 python -c "import mlx.core as mx; print(f'MLX version: {mx.__version__}')"
 ```
 
-## Paso 2: Configurar Conectividad
+## Step 2: Configure Connectivity
 
-### Opción A: Thunderbolt (Recomendado)
+### Option A: Thunderbolt (Recommended)
 
-Thunderbolt ofrece 40Gb/s (TB4) o 80Gb/s (TB5), mucho más rápido que Ethernet.
+Thunderbolt offers 40Gb/s (TB4) or 80Gb/s (TB5), much faster than Ethernet.
 
-#### Topología Daisy-Chain
+#### Daisy-Chain Topology
 
 ```
 MacBook ──TB──► Mac Mini 1 ──TB──► Mac Mini 2 ──TB──► Mac Mini 3 ──TB──► Mac Mini 4
 ```
 
-1. Conectar Macs en cadena con cables Thunderbolt
-2. macOS detectará automáticamente las conexiones
-3. Verificar en Preferencias del Sistema > Red
+1. Connect Macs in a chain with Thunderbolt cables
+2. macOS will automatically detect the connections
+3. Verify in System Preferences > Network
 
-#### Configurar Thunderbolt Bridge
+#### Configure Thunderbolt Bridge
 
-En cada par de Macs conectados:
+For each pair of connected Macs:
 
-1. Abrir **Preferencias del Sistema > Red**
-2. Seleccionar la conexión **Thunderbolt Bridge**
-3. Configurar IP manualmente:
-   - Mac principal: `169.254.1.1`
+1. Open **System Preferences > Network**
+2. Select the **Thunderbolt Bridge** connection
+3. Configure IP manually:
+   - Main Mac: `169.254.1.1`
    - Mac Mini 1: `169.254.1.2`
    - Mac Mini 2: `169.254.1.3`
    - etc.
 
-### Opción B: Ethernet
+### Option B: Ethernet
 
-Si no puedes usar Thunderbolt:
+If you can't use Thunderbolt:
 
-1. Conectar todos los Macs al mismo switch Ethernet
-2. Usar IPs estáticas en la misma subred:
+1. Connect all Macs to the same Ethernet switch
+2. Use static IPs in the same subnet:
    - `192.168.1.10`, `192.168.1.11`, etc.
 
-## Paso 3: Configurar SSH
+## Step 3: Configure SSH
 
-Para que MPI pueda lanzar procesos en los nodos remotos, necesitas SSH sin contraseña.
+For MPI to launch processes on remote nodes, you need passwordless SSH.
 
-### En el Mac principal (nodo líder):
+### On the main Mac (leader node):
 
 ```bash
-# Generar clave SSH si no existe
+# Generate SSH key if it doesn't exist
 ssh-keygen -t ed25519
 
-# Copiar clave a cada nodo
-ssh-copy-id usuario@mac-mini-1.local
-ssh-copy-id usuario@mac-mini-2.local
-ssh-copy-id usuario@mac-mini-3.local
-ssh-copy-id usuario@mac-mini-4.local
+# Copy key to each node
+ssh-copy-id user@mac-mini-1.local
+ssh-copy-id user@mac-mini-2.local
+ssh-copy-id user@mac-mini-3.local
+ssh-copy-id user@mac-mini-4.local
 ```
 
-### Verificar conexión:
+### Verify connection:
 
 ```bash
-# Debería conectar sin pedir contraseña
-ssh mac-mini-1.local "echo 'Conexión OK'"
+# Should connect without asking for password
+ssh mac-mini-1.local "echo 'Connection OK'"
 ```
 
-## Paso 4: Configurar el Cluster en Jupiter
+## Step 4: Configure the Cluster in Jupiter
 
-Editar `config/cluster.yaml`:
+Edit `config/cluster.yaml`:
 
 ```yaml
 backend: "mpi"
@@ -123,7 +123,7 @@ use_thunderbolt_bridge: true
 
 nodes:
   - host: "macbook.local"
-    name: "MacBook Principal"
+    name: "Main MacBook"
     device_type: "mac"
     memory_gb: 24
     chip: "M4"
@@ -138,81 +138,81 @@ nodes:
     role: "trainer"
     connection_type: "thunderbolt"
 
-  # ... más nodos
+  # ... more nodes
 ```
 
-## Paso 5: Verificar el Cluster
+## Step 5: Verify the Cluster
 
 ```bash
-# En el Mac principal
+# On the main Mac
 cd jupiter
 source venv/bin/activate
 
-# Verificar configuración
+# Verify configuration
 jupiter check
 ```
 
-Deberías ver algo como:
+You should see something like:
 
 ```
-Archivos de Configuración
+Configuration Files
 ┏━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ Archivo          ┃ Estado                              ┃
+┃ File             ┃ Status                              ┃
 ┡━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
-│ cluster.yaml     │ ✓ Encontrado                        │
-│ Dominios         │ ✓ 1 encontrados: unreal_engine      │
+│ cluster.yaml     │ ✓ Found                             │
+│ Domains          │ ✓ 1 found: unreal_engine            │
 └──────────────────┴─────────────────────────────────────┘
 
-Verificando cluster...
-✓ Configuración del cluster válida
+Verifying cluster...
+✓ Cluster configuration valid
 
-Nodos del Cluster
+Cluster Nodes
 ┏━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━┳━━━━━━━┳━━━━━━━━━━━┓
-┃ Nombre             ┃ Host                 ┃ Tipo  ┃ RAM   ┃ Rol       ┃
+┃ Name               ┃ Host                 ┃ Type  ┃ RAM   ┃ Role      ┃
 ┡━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━╇━━━━━━━╇━━━━━━━━━━━┩
-│ MacBook Principal  │ macbook.local        │ mac   │ 24GB  │ generator │
+│ Main MacBook       │ macbook.local        │ mac   │ 24GB  │ generator │
 │ Mac Mini 1         │ mac-mini-1.local     │ mac   │ 16GB  │ trainer   │
 │ Mac Mini 2         │ mac-mini-2.local     │ mac   │ 16GB  │ trainer   │
 │ Mac Mini 3         │ mac-mini-3.local     │ mac   │ 16GB  │ trainer   │
 │ Mac Mini 4         │ mac-mini-4.local     │ mac   │ 16GB  │ trainer   │
 └────────────────────┴──────────────────────┴───────┴───────┴───────────┘
 
-Memoria total: 88GB
+Total memory: 88GB
 ```
 
-## Paso 6: Probar Training Distribuido
+## Step 6: Test Distributed Training
 
 ```bash
-# Test rápido con modelo pequeño
+# Quick test with small model
 jupiter start --domain unreal_engine --epochs 1
 ```
 
-## Solución de Problemas
+## Troubleshooting
 
-### "Connection refused" en SSH
+### "Connection refused" on SSH
 
 ```bash
-# Habilitar Remote Login en el Mac destino
-# Preferencias del Sistema > Compartir > Remote Login
+# Enable Remote Login on the target Mac
+# System Preferences > Sharing > Remote Login
 ```
 
-### "MLX not found" en nodos remotos
+### "MLX not found" on remote nodes
 
-Asegúrate de que el entorno virtual esté activado en todos los nodos:
+Make sure the virtual environment is activated on all nodes:
 
 ```bash
-# Añadir a ~/.bashrc o ~/.zshrc
+# Add to ~/.bashrc or ~/.zshrc
 export PATH="$HOME/jupiter/venv/bin:$PATH"
 ```
 
-### Rendimiento lento
+### Slow performance
 
-1. Verificar que estás usando Thunderbolt, no Ethernet
-2. Verificar que no hay otras apps usando la red
-3. Considerar aumentar `sync_every_n_steps` si la red es lenta
+1. Verify you're using Thunderbolt, not Ethernet
+2. Check that no other apps are using the network
+3. Consider increasing `sync_every_n_steps` if network is slow
 
-## Siguientes Pasos
+## Next Steps
 
-- [Crear un nuevo dominio](new_domain.md)
-- [Añadir GPUs NVIDIA](nvidia_setup.md)
-- [Entender el ciclo de auto-mejora](self_improvement.md)
+- [Create a new domain](new_domain.md)
+- [Add NVIDIA GPUs](nvidia_setup.md)
+- [Understand self-improvement](self_improvement.md)

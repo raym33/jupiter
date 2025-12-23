@@ -1,91 +1,91 @@
 # Jupiter
 
-**Framework de entrenamiento distribuido para crear modelos de lenguaje expertos en dominios específicos.**
+**Distributed training framework for creating domain-specific expert language models.**
 
-Entrena tu propio modelo de 1B parámetros usando un cluster de Macs (M4/M5) y/o GPUs NVIDIA, con generación automática de datos sintéticos y ciclo de auto-mejora.
-
----
-
-## Características
-
-- **Dominio configurable**: Cambia un archivo YAML para entrenar expertos en cualquier área (Unreal Engine, Python, Química, etc.)
-- **Training distribuido**: Soporta clusters de Macs via Thunderbolt y GPUs NVIDIA via NCCL
-- **Generación de datos sintéticos**: Usa modelos locales (Llama, Mistral) para generar datos de entrenamiento
-- **Ciclo auto-mejorante**: El modelo entrenado puede reemplazar al generador cuando lo supere
-- **Hardware heterogéneo**: Combina Macs con diferentes cantidades de RAM y GPUs NVIDIA
+Train your own 1B parameter model using a cluster of Macs (M4/M5) and/or NVIDIA GPUs, with automatic synthetic data generation and self-improvement cycle.
 
 ---
 
-## Requisitos de Hardware
+## Features
 
-### Configuración Mínima (Solo Macs)
-| Dispositivo | RAM | Rol |
-|-------------|-----|-----|
-| 1× Mac (M4/M5) | 16-24GB | Generador de datos |
-| 1-4× Mac Mini (M4/M5) | 16GB+ c/u | Nodos de training |
-
-### Configuración Híbrida (Macs + NVIDIA)
-| Dispositivo | VRAM/RAM | Rol |
-|-------------|----------|-----|
-| Macs | 16GB+ | Generación + Training MLX |
-| RTX 3090/4090 | 24GB | Training PyTorch |
-
-### Conexiones
-- **Entre Macs**: Thunderbolt 4/5 (recomendado) o Ethernet 10GbE
-- **Macs ↔ NVIDIA**: Ethernet (los datos se sincronizan, no los gradientes directamente)
+- **Configurable domains**: Change a YAML file to train experts in any area (Unreal Engine, Python, Chemistry, etc.)
+- **Distributed training**: Supports Mac clusters via Thunderbolt and NVIDIA GPUs via NCCL
+- **Synthetic data generation**: Uses local models (Llama, Mistral) to generate training data
+- **Self-improvement cycle**: The trained model can replace the generator when it surpasses it
+- **Heterogeneous hardware**: Combine Macs with different RAM amounts and NVIDIA GPUs
 
 ---
 
-## Instalación
+## Hardware Requirements
 
-### 1. Clonar el repositorio
+### Minimum Configuration (Macs Only)
+| Device | RAM | Role |
+|--------|-----|------|
+| 1× Mac (M4/M5) | 16-24GB | Data generator |
+| 1-4× Mac Mini (M4/M5) | 16GB+ each | Training nodes |
+
+### Hybrid Configuration (Macs + NVIDIA)
+| Device | VRAM/RAM | Role |
+|--------|----------|------|
+| Macs | 16GB+ | Generation + MLX Training |
+| RTX 3090/4090 | 24GB | PyTorch Training |
+
+### Connections
+- **Between Macs**: Thunderbolt 4/5 (recommended) or 10GbE Ethernet
+- **Macs ↔ NVIDIA**: Ethernet (data syncs, not gradients directly)
+
+---
+
+## Installation
+
+### 1. Clone the repository
 ```bash
 git clone https://github.com/raym33/jupiter.git
 cd jupiter
 ```
 
-### 2. Instalar dependencias (Mac)
+### 2. Install dependencies (Mac)
 ```bash
-# Instalar Xcode CLI tools
+# Install Xcode CLI tools
 xcode-select --install
 
-# Instalar dependencias del sistema
+# Install system dependencies
 brew install mpich
 
-# Crear entorno virtual
+# Create virtual environment
 python3.11 -m venv venv
 source venv/bin/activate
 
-# Instalar Jupiter
+# Install Jupiter
 pip install -e ".[mac]"
 ```
 
-### 3. Instalar dependencias (NVIDIA Linux)
+### 3. Install dependencies (NVIDIA Linux)
 ```bash
-# Crear entorno virtual
+# Create virtual environment
 python3.11 -m venv venv
 source venv/bin/activate
 
-# Instalar Jupiter con soporte CUDA
+# Install Jupiter with CUDA support
 pip install -e ".[nvidia]"
 ```
 
 ---
 
-## Inicio Rápido
+## Quick Start
 
-### Paso 1: Configurar tu dominio
+### Step 1: Configure your domain
 
-Copia el template y edítalo:
+Copy the template and edit it:
 ```bash
-cp config/domains/_template.yaml config/domains/mi_dominio.yaml
+cp config/domains/_template.yaml config/domains/my_domain.yaml
 ```
 
-Edita `mi_dominio.yaml` con las fuentes de datos y configuración de tu dominio.
+Edit `my_domain.yaml` with your domain's data sources and configuration.
 
-### Paso 2: Configurar el cluster
+### Step 2: Configure the cluster
 
-Edita `config/cluster.yaml` con tus dispositivos:
+Edit `config/cluster.yaml` with your devices:
 ```yaml
 nodes:
   - host: "macbook.local"
@@ -96,40 +96,40 @@ nodes:
     role: "trainer"
     memory_gb: 16
 
-  # Añadir más nodos...
+  # Add more nodes...
 ```
 
-### Paso 3: Iniciar el entrenamiento
+### Step 3: Start training
 
 ```bash
-# Modo interactivo (recomendado para empezar)
-jupiter start --domain mi_dominio --interactive
+# Interactive mode (recommended to start)
+jupiter start --domain my_domain --interactive
 
-# Modo automático (ciclo completo)
-jupiter start --domain mi_dominio --auto
+# Automatic mode (full cycle)
+jupiter start --domain my_domain --auto
 ```
 
 ---
 
-## Arquitectura
+## Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         JUPITER                                 │
 │                                                                 │
 │   ┌─────────────┐      ┌─────────────┐      ┌─────────────┐    │
-│   │  RECOLECTOR │      │  GENERADOR  │      │   FILTRO    │    │
-│   │  de datos   │ ───► │  sintético  │ ───► │  calidad    │    │
-│   │  reales     │      │  (Llama)    │      │             │    │
+│   │  COLLECTOR  │      │  SYNTHETIC  │      │   QUALITY   │    │
+│   │  real data  │ ───► │  GENERATOR  │ ───► │   FILTER    │    │
+│   │             │      │  (Llama)    │      │             │    │
 │   └─────────────┘      └─────────────┘      └──────┬──────┘    │
 │                                                    │           │
 │                                              ┌─────▼─────┐     │
-│                                              │   COLA    │     │
-│                                              │  de datos │     │
+│                                              │   DATA    │     │
+│                                              │   QUEUE   │     │
 │                                              └─────┬─────┘     │
 │                                                    │           │
 │   ┌────────────────────────────────────────────────┼─────────┐ │
-│   │                TRAINING DISTRIBUIDO            │         │ │
+│   │              DISTRIBUTED TRAINING              │         │ │
 │   │                                                ▼         │ │
 │   │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐    │ │
 │   │   │ Mac #1  │  │ Mac #2  │  │ Mac #3  │  │ RTX GPU │    │ │
@@ -140,24 +140,24 @@ jupiter start --domain mi_dominio --auto
 │   │                           │                              │ │
 │   │                    ┌──────▼──────┐                       │ │
 │   │                    │  GRADIENT   │                       │ │
-│   │                    │   SYNC      │                       │ │
+│   │                    │    SYNC     │                       │ │
 │   │                    └──────┬──────┘                       │ │
 │   │                           │                              │ │
 │   └───────────────────────────┼──────────────────────────────┘ │
 │                               │                                │
 │                        ┌──────▼──────┐                         │
 │                        │ CHECKPOINT  │                         │
-│                        │  + EVAL     │                         │
+│                        │   + EVAL    │                         │
 │                        └──────┬──────┘                         │
 │                               │                                │
 │                        ┌──────▼──────┐                         │
-│                        │ ¿SUPERA AL  │                         │
-│                        │ GENERADOR?  │                         │
+│                        │  SURPASSES  │                         │
+│                        │ GENERATOR?  │                         │
 │                        └──────┬──────┘                         │
-│                               │ Sí                             │
+│                               │ Yes                            │
 │                        ┌──────▼──────┐                         │
-│                        │ REEMPLAZAR  │                         │
-│                        │ GENERADOR   │ ──► CICLO CONTINÚA      │
+│                        │  REPLACE    │                         │
+│                        │  GENERATOR  │ ──► CYCLE CONTINUES     │
 │                        └─────────────┘                         │
 │                                                                │
 └─────────────────────────────────────────────────────────────────┘
@@ -165,71 +165,70 @@ jupiter start --domain mi_dominio --auto
 
 ---
 
-## Estructura del Proyecto
+## Project Structure
 
 ```
 jupiter/
 ├── config/
-│   ├── cluster.yaml           # Configuración de tu cluster
+│   ├── cluster.yaml           # Your cluster configuration
 │   └── domains/
-│       ├── _template.yaml     # Template para nuevos dominios
-│       └── unreal_engine.yaml # Ejemplo: experto en UE5
+│       ├── _template.yaml     # Template for new domains
+│       └── unreal_engine.yaml # Example: UE5 expert
 │
-├── data/
-│   ├── collectors/            # Recolectores de datos reales
-│   ├── generators/            # Generadores de datos sintéticos
-│   ├── filters/               # Filtros de calidad
-│   └── queue/                 # Cola de datos para training
+├── jupiter/
+│   ├── config/                # Configuration system
+│   ├── data/
+│   │   ├── collectors/        # Real data collectors
+│   │   ├── generators/        # Synthetic data generators
+│   │   ├── filters/           # Quality filters
+│   │   └── queue/             # Data queue for training
+│   ├── training/
+│   │   ├── model/             # Model architecture
+│   │   ├── distributed/       # Distributed training (MLX + PyTorch)
+│   │   └── evaluation/        # Benchmarks and evaluation
+│   └── orchestrator/          # Full cycle orchestration
 │
-├── training/
-│   ├── distributed/           # Training distribuido (MLX + PyTorch)
-│   ├── model/                 # Arquitectura del modelo
-│   └── evaluation/            # Benchmarks y evaluación
-│
-├── orchestrator/              # Orquestación del ciclo completo
-│
-├── scripts/                   # Scripts de utilidad
-│
+├── scripts/                   # Utility scripts
 ├── tests/                     # Tests
-│
-└── docs/                      # Documentación extendida
+└── docs/                      # Extended documentation
 ```
 
 ---
 
-## Dominios de Ejemplo
+## Example Domains
 
-| Dominio | Descripción | Config |
-|---------|-------------|--------|
-| `unreal_engine` | Experto en desarrollo de videojuegos con UE5 | [Ver](config/domains/unreal_engine.yaml) |
-| `python` | Experto en programación Python | Próximamente |
-| `chemistry` | Experto en química universitaria | Próximamente |
-
----
-
-## Guías
-
-- [Configurar un cluster de Macs](docs/mac_cluster_setup.md)
-- [Añadir GPUs NVIDIA al cluster](docs/nvidia_setup.md)
-- [Crear un nuevo dominio](docs/new_domain.md)
-- [Entender el ciclo de auto-mejora](docs/self_improvement.md)
+| Domain | Description | Config |
+|--------|-------------|--------|
+| `unreal_engine` | Expert in game development with UE5 | [View](config/domains/unreal_engine.yaml) |
+| `python` | Expert in Python programming | Coming soon |
+| `chemistry` | Expert in university chemistry | Coming soon |
 
 ---
 
-## Contribuir
+## Documentation
 
-¡Las contribuciones son bienvenidas! Ver [CONTRIBUTING.md](CONTRIBUTING.md).
-
----
-
-## Licencia
-
-MIT License - ver [LICENSE](LICENSE)
+- [Mac Cluster Setup](docs/mac_cluster_setup.md)
+- [Adding NVIDIA GPUs](docs/nvidia_setup.md)
+- [Creating a New Domain](docs/new_domain.md)
+- [Understanding Self-Improvement](docs/self_improvement.md)
+- [Documentación en Español](docs/español/)
 
 ---
 
-## Créditos
+## Contributing
 
-- [MLX](https://github.com/ml-explore/mlx) - Framework de ML para Apple Silicon
-- [Exo](https://github.com/exo-explore/exo) - Inspiración para networking distribuido
-- [mlx-lm](https://github.com/ml-explore/mlx-lm) - Fine-tuning con MLX
+Contributions are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE)
+
+---
+
+## Credits
+
+- [MLX](https://github.com/ml-explore/mlx) - ML framework for Apple Silicon
+- [Exo](https://github.com/exo-explore/exo) - Inspiration for distributed networking
+- [mlx-lm](https://github.com/ml-explore/mlx-lm) - Fine-tuning with MLX
