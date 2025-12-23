@@ -1,7 +1,12 @@
 """
-CLI de Jupiter.
+Jupiter CLI - Command line interface for the framework.
 
-Interfaz de línea de comandos para el framework.
+Commands:
+    - start: Start training pipeline
+    - check: Verify configuration
+    - swarm: Run MoE-R swarm inference
+    - swarm-train: Train expert swarm
+    - model-info: Show model architecture info
 """
 
 import asyncio
@@ -12,6 +17,9 @@ import click
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
+from rich.live import Live
+from rich.spinner import Spinner
+from rich.text import Text
 
 from jupiter.config import JupiterConfig
 from jupiter.training.model import ModelConfig
@@ -23,9 +31,10 @@ console = Console()
 @click.version_option(version="0.1.0")
 def main():
     """
-    Jupiter - Framework de entrenamiento distribuido para modelos de lenguaje expertos.
+    Jupiter - Distributed training framework for expert language models.
 
-    Entrena modelos de 1B parámetros en clusters de Macs y/o GPUs NVIDIA.
+    Train 1B parameter models on Mac clusters and/or NVIDIA GPUs.
+    Supports MoE-R (Mixture of Real Experts) for collaborative inference.
     """
     pass
 
@@ -283,6 +292,320 @@ def export(checkpoint_path: str, format: str, output: Optional[str]):
 
     # TODO: Implementar exportación
     console.print(f"[yellow]Exportación a {format} no implementada aún[/yellow]")
+
+
+# =============================================================================
+# SWARM COMMANDS (MoE-R)
+# =============================================================================
+
+@main.group()
+def swarm():
+    """
+    MoE-R Swarm commands - Multiple expert collaboration.
+
+    Use specialized expert models that work together to solve complex tasks.
+    """
+    pass
+
+
+@swarm.command("chat")
+@click.option("--experts", "-e", default="config/experts", help="Experts configuration directory")
+@click.option("--config", "-c", default=None, help="Swarm configuration file")
+@click.option("--load", "-l", multiple=True, help="Specific experts to load (can use multiple times)")
+def swarm_chat(experts: str, config: Optional[str], load: tuple):
+    """
+    Start interactive chat with the expert swarm.
+
+    Example:
+        jupiter swarm chat --experts config/experts/python
+        jupiter swarm chat -l python-core -l python-backend
+    """
+    from jupiter.swarm import Swarm, SwarmConfig
+
+    console.print(Panel.fit(
+        "[bold blue]Jupiter Swarm[/bold blue] - MoE-R Chat",
+        subtitle="Mixture of Real Experts"
+    ))
+
+    try:
+        # Load swarm config
+        if config:
+            swarm_config = SwarmConfig.from_yaml(config)
+        else:
+            swarm_config = SwarmConfig(experts_dir=experts)
+
+        # Create swarm
+        swarm_instance = Swarm(swarm_config)
+
+        async def run_chat():
+            await swarm_instance.initialize()
+
+            # Load specific experts if requested
+            if load:
+                for expert_name in load:
+                    try:
+                        await swarm_instance.load_expert(expert_name)
+                    except Exception as e:
+                        console.print(f"[yellow]Warning:[/yellow] Could not load {expert_name}: {e}")
+
+            # Run chat
+            async for _ in swarm_instance.chat():
+                pass
+
+            await swarm_instance.shutdown()
+
+        asyncio.run(run_chat())
+
+    except KeyboardInterrupt:
+        console.print("\n[yellow]Chat ended[/yellow]")
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}")
+        raise
+
+
+@swarm.command("list")
+@click.option("--experts", "-e", default="config/experts", help="Experts configuration directory")
+def swarm_list(experts: str):
+    """
+    List available expert configurations.
+
+    Example:
+        jupiter swarm list
+    """
+    experts_path = Path(experts)
+
+    if not experts_path.exists():
+        console.print(f"[red]Error:[/red] Experts directory not found: {experts_path}")
+        return
+
+    table = Table(title="Available Experts")
+    table.add_column("Name", style="cyan")
+    table.add_column("Domain", style="green")
+    table.add_column("Description")
+    table.add_column("Keywords", style="dim")
+
+    # Find all expert configs recursively
+    for config_file in experts_path.rglob("*.yaml"):
+        if config_file.name.startswith("_"):
+            continue
+
+        try:
+            from jupiter.swarm import ExpertConfig
+            config = ExpertConfig.from_yaml(str(config_file))
+
+            keywords = ", ".join(config.keywords[:5])
+            if len(config.keywords) > 5:
+                keywords += f" (+{len(config.keywords) - 5})"
+
+            table.add_row(
+                config.name,
+                config.domain,
+                config.description[:50] + "..." if len(config.description) > 50 else config.description,
+                keywords,
+            )
+        except Exception as e:
+            table.add_row(config_file.stem, "[red]Error[/red]", str(e)[:50], "")
+
+    console.print(table)
+
+
+@swarm.command("query")
+@click.argument("query")
+@click.option("--experts", "-e", default="config/experts", help="Experts configuration directory")
+@click.option("--load", "-l", multiple=True, help="Specific experts to load")
+@click.option("--top-k", "-k", default=3, help="Number of experts to use")
+def swarm_query(query: str, experts: str, load: tuple, top_k: int):
+    """
+    Send a single query to the swarm.
+
+    Example:
+        jupiter swarm query "How do I create a FastAPI endpoint?"
+        jupiter swarm query "Explain React hooks" -l react-frontend
+    """
+    from jupiter.swarm import Swarm, SwarmConfig, RouterConfig
+
+    console.print(f"[bold]Query:[/bold] {query}\n")
+
+    try:
+        router_config = RouterConfig(top_k=top_k)
+        swarm_config = SwarmConfig(experts_dir=experts, router=router_config)
+        swarm_instance = Swarm(swarm_config)
+
+        async def run_query():
+            await swarm_instance.initialize()
+
+            # Load specific experts
+            if load:
+                for expert_name in load:
+                    try:
+                        await swarm_instance.load_expert(expert_name)
+                    except Exception as e:
+                        console.print(f"[yellow]Warning:[/yellow] {e}")
+
+            with console.status("[bold green]Experts thinking..."):
+                response = await swarm_instance.query(query)
+
+            console.print(Panel(
+                response.content,
+                title="[bold green]Response[/bold green]",
+                subtitle=f"Experts: {list(response.expert_contributions.keys())}"
+            ))
+
+            # Show stats
+            console.print(f"\n[dim]Tokens: {response.total_tokens} | Latency: {response.total_latency_ms:.0f}ms[/dim]")
+
+            await swarm_instance.shutdown()
+
+        asyncio.run(run_query())
+
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}")
+        raise
+
+
+@swarm.command("train")
+@click.option("--expert", "-e", required=True, help="Expert name to train")
+@click.option("--domain-config", "-d", required=True, help="Domain configuration file")
+@click.option("--output", "-o", default="models/experts", help="Output directory")
+@click.option("--epochs", default=10, help="Number of training epochs")
+@click.option("--preset", "-p", default="500m", help="Model preset to use")
+def swarm_train(expert: str, domain_config: str, output: str, epochs: int, preset: str):
+    """
+    Train an expert model on a specific domain.
+
+    Example:
+        jupiter swarm train -e python-core -d config/domains/python.yaml
+    """
+    from jupiter.swarm import ExpertConfig
+    from jupiter.config.domain import DomainConfig
+    from jupiter.training.model.config import ModelConfig
+    from jupiter.training.model.architecture import JupiterModel
+    import yaml
+
+    console.print(Panel.fit(
+        f"[bold blue]Training Expert:[/bold blue] {expert}",
+        subtitle=f"Domain: {domain_config}"
+    ))
+
+    try:
+        # Load domain config
+        with open(domain_config) as f:
+            domain = DomainConfig.from_dict(yaml.safe_load(f))
+
+        # Create model
+        model_config = ModelConfig.from_preset(preset)
+        console.print(f"Model: {model_config.name} ({model_config.num_parameters_str})")
+
+        output_path = Path(output) / expert
+        output_path.mkdir(parents=True, exist_ok=True)
+
+        console.print(f"Output: {output_path}")
+        console.print(f"Epochs: {epochs}")
+
+        # TODO: Implement actual training loop
+        console.print("\n[yellow]Note: Full training pipeline coming soon![/yellow]")
+        console.print("For now, use 'jupiter start' to train the base model,")
+        console.print("then configure it as an expert.")
+
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}")
+        raise
+
+
+@swarm.command("create-expert")
+@click.argument("name")
+@click.option("--domain", "-d", required=True, help="Expert domain (e.g., python, react)")
+@click.option("--output", "-o", default="config/experts", help="Output directory")
+def swarm_create_expert(name: str, domain: str, output: str):
+    """
+    Create a new expert configuration from template.
+
+    Example:
+        jupiter swarm create-expert my-expert --domain python
+    """
+    output_path = Path(output)
+    output_path.mkdir(parents=True, exist_ok=True)
+
+    expert_file = output_path / f"{name}.yaml"
+
+    if expert_file.exists():
+        console.print(f"[red]Error:[/red] Expert '{name}' already exists")
+        return
+
+    template = f'''# =============================================================================
+# EXPERT: {name}
+# =============================================================================
+
+name: "{name}"
+domain: "{domain}"
+description: "Expert in {domain}"
+
+base_model: "jupiter-500m"
+model_path: null  # Set after training
+
+keywords:
+  - "{domain}"
+  # Add more keywords...
+
+capabilities:
+  - "{domain.title()} fundamentals"
+  # Add more capabilities...
+
+max_tokens: 1024
+temperature: 0.7
+top_p: 0.9
+
+system_prompt: |
+  You are an expert in {domain}.
+
+  Provide detailed, accurate, and practical responses.
+  Always include examples when relevant.
+'''
+
+    with open(expert_file, 'w') as f:
+        f.write(template)
+
+    console.print(f"[green]✓[/green] Expert created: {expert_file}")
+    console.print(f"  Edit the file to customize your expert configuration")
+
+
+@swarm.command("status")
+@click.option("--experts", "-e", default="config/experts", help="Experts configuration directory")
+def swarm_status(experts: str):
+    """
+    Show swarm system status.
+    """
+    from jupiter.swarm import Swarm, SwarmConfig
+
+    console.print("[bold]Jupiter Swarm Status[/bold]\n")
+
+    # Check experts directory
+    experts_path = Path(experts)
+    if experts_path.exists():
+        expert_files = list(experts_path.rglob("*.yaml"))
+        expert_files = [f for f in expert_files if not f.name.startswith("_")]
+        console.print(f"Expert configurations: [green]{len(expert_files)}[/green]")
+    else:
+        console.print(f"[yellow]Experts directory not found: {experts}[/yellow]")
+
+    # Check for trained models
+    models_path = Path("models/experts")
+    if models_path.exists():
+        trained = list(models_path.iterdir())
+        console.print(f"Trained expert models: [green]{len(trained)}[/green]")
+        for model_dir in trained:
+            if model_dir.is_dir():
+                console.print(f"  - {model_dir.name}")
+    else:
+        console.print("Trained expert models: [dim]0[/dim]")
+
+    # Check MLX availability
+    try:
+        import mlx.core as mx
+        console.print(f"\nMLX: [green]Available[/green] (v{mx.__version__})")
+        console.print(f"  Device: {mx.default_device()}")
+    except ImportError:
+        console.print("\nMLX: [red]Not installed[/red]")
 
 
 if __name__ == "__main__":

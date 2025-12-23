@@ -1,0 +1,64 @@
+# =============================================================================
+# EXPERT: Python Data Science
+# =============================================================================
+# Specialized in pandas, numpy, data analysis, and visualization
+
+name: "python-datascience"
+domain: "data_science"
+description: "Expert in Python data science stack: pandas, numpy, matplotlib, data analysis"
+
+base_model: "jupiter-500m"
+model_path: null
+
+keywords:
+  - "pandas"
+  - "numpy"
+  - "dataframe"
+  - "series"
+  - "matplotlib"
+  - "seaborn"
+  - "plotly"
+  - "csv"
+  - "excel"
+  - "groupby"
+  - "merge"
+  - "join"
+  - "pivot"
+  - "visualization"
+  - "plot"
+  - "histogram"
+  - "scatter"
+  - "array"
+  - "matrix"
+  - "statistics"
+  - "correlation"
+  - "regression"
+
+capabilities:
+  - "Pandas DataFrame manipulation"
+  - "NumPy array operations"
+  - "Data cleaning and preprocessing"
+  - "Statistical analysis"
+  - "Data visualization"
+  - "Time series analysis"
+  - "Feature engineering"
+
+max_tokens: 1024
+temperature: 0.7
+
+system_prompt: |
+  You are a data science expert specializing in Python's data stack.
+
+  Your expertise includes:
+  - Pandas for data manipulation and analysis
+  - NumPy for numerical computing
+  - Matplotlib, Seaborn, and Plotly for visualization
+  - Statistical analysis and hypothesis testing
+  - Data cleaning and preprocessing
+
+  When answering:
+  1. Provide efficient, vectorized operations (avoid loops)
+  2. Show complete, runnable code examples
+  3. Explain data transformations step by step
+  4. Include visualization code when helpful
+  5. Consider memory efficiency for large datasets

@@ -1,0 +1,69 @@
+# =============================================================================
+# EXPERT: Python Core
+# =============================================================================
+# Specialized in Python language fundamentals, standard library, and best practices
+
+name: "python-core"
+domain: "python"
+description: "Expert in Python language fundamentals, syntax, standard library, and Pythonic patterns"
+
+# Model configuration
+base_model: "jupiter-500m"  # Will use Qwen 0.5B if no custom model
+model_path: null  # Set after training: "models/experts/python-core"
+
+# Routing keywords - the router uses these to match queries
+keywords:
+  - "python"
+  - "def"
+  - "class"
+  - "import"
+  - "list"
+  - "dict"
+  - "tuple"
+  - "set"
+  - "comprehension"
+  - "generator"
+  - "decorator"
+  - "context manager"
+  - "exception"
+  - "type hint"
+  - "dataclass"
+  - "asyncio"
+  - "typing"
+  - "collections"
+  - "itertools"
+  - "functools"
+
+# Specific capabilities
+capabilities:
+  - "Python syntax and semantics"
+  - "Standard library usage"
+  - "Type hints and annotations"
+  - "Decorators and metaprogramming"
+  - "Async/await patterns"
+  - "Error handling best practices"
+  - "Pythonic idioms and patterns"
+
+# Generation parameters
+max_tokens: 1024
+temperature: 0.7
+top_p: 0.9
+
+# System prompt
+system_prompt: |
+  You are a Python expert with deep knowledge of the language and its ecosystem.
+
+  Your expertise includes:
+  - Python 3.x syntax and semantics
+  - Standard library (collections, itertools, functools, typing, etc.)
+  - Type hints and static type checking
+  - Decorators, generators, and context managers
+  - Async programming with asyncio
+  - Best practices and Pythonic patterns
+
+  When answering:
+  1. Always provide working code examples
+  2. Follow PEP 8 style guidelines
+  3. Use type hints where appropriate
+  4. Explain the "why" behind patterns
+  5. Point out common pitfalls to avoid
